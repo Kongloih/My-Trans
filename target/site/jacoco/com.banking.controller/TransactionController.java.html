@@ -68,14 +68,14 @@ public class TransactionController {
     public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; getTransaction(
             @Parameter(description = &quot;交易ID&quot;) @PathVariable Long id) {
         
-<span class="fc" id="L71">        TransactionResponse response = transactionService.getTransaction(id);</span>
+<span class="nc" id="L71">        TransactionResponse response = transactionService.getTransaction(id);</span>
         
-<span class="fc" id="L73">        Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();</span>
-<span class="fc" id="L74">        result.put(&quot;success&quot;, true);</span>
-<span class="fc" id="L75">        result.put(&quot;message&quot;, &quot;获取交易详情成功&quot;);</span>
-<span class="fc" id="L76">        result.put(&quot;data&quot;, response);</span>
+<span class="nc" id="L73">        Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L74">        result.put(&quot;success&quot;, true);</span>
+<span class="nc" id="L75">        result.put(&quot;message&quot;, &quot;获取交易详情成功&quot;);</span>
+<span class="nc" id="L76">        result.put(&quot;data&quot;, response);</span>
         
-<span class="fc" id="L78">        return ResponseEntity.ok(result);</span>
+<span class="nc" id="L78">        return ResponseEntity.ok(result);</span>
     }
     
     /**
@@ -91,14 +91,14 @@ public class TransactionController {
             @Parameter(description = &quot;交易ID&quot;) @PathVariable Long id,
             @Valid @RequestBody TransactionRequest request) {
         
-<span class="fc" id="L94">        TransactionResponse response = transactionService.updateTransaction(id, request);</span>
+<span class="nc" id="L94">        TransactionResponse response = transactionService.updateTransaction(id, request);</span>
         
-<span class="fc" id="L96">        Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();</span>
-<span class="fc" id="L97">        result.put(&quot;success&quot;, true);</span>
-<span class="fc" id="L98">        result.put(&quot;message&quot;, &quot;交易更新成功&quot;);</span>
-<span class="fc" id="L99">        result.put(&quot;data&quot;, response);</span>
+<span class="nc" id="L96">        Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L97">        result.put(&quot;success&quot;, true);</span>
+<span class="nc" id="L98">        result.put(&quot;message&quot;, &quot;交易更新成功&quot;);</span>
+<span class="nc" id="L99">        result.put(&quot;data&quot;, response);</span>
         
-<span class="fc" id="L101">        return ResponseEntity.ok(result);</span>
+<span class="nc" id="L101">        return ResponseEntity.ok(result);</span>
     }
     
     /**
@@ -112,13 +112,13 @@ public class TransactionController {
     public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; deleteTransaction(
             @Parameter(description = &quot;交易ID&quot;) @PathVariable Long id) {
         
-<span class="fc" id="L115">        transactionService.deleteTransaction(id);</span>
+<span class="nc" id="L115">        transactionService.deleteTransaction(id);</span>
         
-<span class="fc" id="L117">        Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();</span>
-<span class="fc" id="L118">        result.put(&quot;success&quot;, true);</span>
-<span class="fc" id="L119">        result.put(&quot;message&quot;, &quot;交易删除成功&quot;);</span>
+<span class="nc" id="L117">        Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L118">        result.put(&quot;success&quot;, true);</span>
+<span class="nc" id="L119">        result.put(&quot;message&quot;, &quot;交易删除成功&quot;);</span>
         
-<span class="fc" id="L121">        return ResponseEntity.ok(result);</span>
+<span class="nc" id="L121">        return ResponseEntity.ok(result);</span>
     }
     
     /**
@@ -140,7 +140,7 @@ public class TransactionController {
 <span class="pc bpc" id="L140" title="2 of 4 branches missed.">        if (page == 0 &amp;&amp; size == Integer.MAX_VALUE) {</span>
             // 获取所有交易
 <span class="nc" id="L142">            transactions = transactionService.getAllTransactions();</span>
-        } else {
+<span class="nc" id="L143">        } else {</span>
             // 分页获取
 <span class="fc" id="L145">            transactions = transactionService.getTransactions(page, size);</span>
         }
@@ -280,17 +280,17 @@ public class TransactionController {
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; handleValidationException(MethodArgumentNotValidException ex) {
-<span class="fc" id="L283">        Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();</span>
-<span class="fc" id="L284">        result.put(&quot;success&quot;, false);</span>
-<span class="fc" id="L285">        result.put(&quot;errorCode&quot;, &quot;VALIDATION_ERROR&quot;);</span>
-<span class="fc" id="L286">        result.put(&quot;message&quot;, &quot;参数校验失败&quot;);</span>
+<span class="nc" id="L283">        Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L284">        result.put(&quot;success&quot;, false);</span>
+<span class="nc" id="L285">        result.put(&quot;errorCode&quot;, &quot;VALIDATION_ERROR&quot;);</span>
+<span class="nc" id="L286">        result.put(&quot;message&quot;, &quot;参数校验失败&quot;);</span>
         
-<span class="fc" id="L288">        Map&lt;String, String&gt; fieldErrors = new HashMap&lt;&gt;();</span>
-<span class="fc" id="L289">        ex.getBindingResult().getFieldErrors().forEach(error -&gt;</span>
-<span class="fc" id="L290">                fieldErrors.put(error.getField(), error.getDefaultMessage()));</span>
-<span class="fc" id="L291">        result.put(&quot;fieldErrors&quot;, fieldErrors);</span>
+<span class="nc" id="L288">        Map&lt;String, String&gt; fieldErrors = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L289">        ex.getBindingResult().getFieldErrors().forEach(error -&gt;</span>
+<span class="nc" id="L290">                fieldErrors.put(error.getField(), error.getDefaultMessage()));</span>
+<span class="nc" id="L291">        result.put(&quot;fieldErrors&quot;, fieldErrors);</span>
         
-<span class="fc" id="L293">        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);</span>
+<span class="nc" id="L293">        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);</span>
     }
     
     /**

@@ -87,12 +87,12 @@ mvn spring-boot:run
 
 1. **构建Docker镜像**
 ```bash
-docker build -t stock-trading-system .
+docker build -t Transaction-Management .
 ```
 
 2. **运行容器**
 ```bash
-docker run -p 8080:8080 stock-trading-system
+docker run -p 8080:8080 Transaction-Management
 ```
 
 ## 数据库配置
@@ -308,7 +308,7 @@ GET /api/transactions/security/000001/account/1234567890123456/statistics
 - **压力测试**: 并发1000笔交易测试
 - **数据测试**: Repository层数据访问测试
 
-### A股测试数据
+### 测试数据
 测试环境自动生成数据：
 
 

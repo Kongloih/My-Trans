@@ -31,36 +31,36 @@ public class DataInitializationService implements CommandLineRunner {
     
     // Test account numbers
 <span class="nc" id="L33">    private final String[] TEST_ACCOUNTS = {</span>
-        &quot;1234567890123456&quot;, &quot;2345678901234567&quot;, &quot;3456789012345678&quot;, 
-        &quot;4567890123456789&quot;, &quot;5678901234567890&quot;, &quot;6789012345678901&quot;, 
-        &quot;7890123456789012&quot;, &quot;8901234567890123&quot;, &quot;9012345678901234&quot;, 
-        &quot;0123456789012345&quot;
+<span class="nc" id="L34">        &quot;1234567890123456&quot;, &quot;2345678901234567&quot;, &quot;3456789012345678&quot;, </span>
+<span class="nc" id="L35">        &quot;4567890123456789&quot;, &quot;5678901234567890&quot;, &quot;6789012345678901&quot;, </span>
+<span class="nc" id="L36">        &quot;7890123456789012&quot;, &quot;8901234567890123&quot;, &quot;9012345678901234&quot;, </span>
+<span class="nc" id="L37">        &quot;0123456789012345&quot;</span>
     };
     
     // China stock codes
 <span class="nc" id="L41">    private final String[] SECURITY_CODES = {</span>
-        &quot;000001&quot;, &quot;000002&quot;, &quot;000858&quot;, &quot;000725&quot;, &quot;002415&quot;,  // Shenzhen stocks
-        &quot;600036&quot;, &quot;600519&quot;, &quot;600000&quot;, &quot;601318&quot;, &quot;601939&quot;,  // Shanghai stocks
-        &quot;300015&quot;, &quot;300059&quot;, &quot;300750&quot;, &quot;300888&quot;, &quot;300122&quot;   // ChiNext stocks
+<span class="nc" id="L42">        &quot;000001&quot;, &quot;000002&quot;, &quot;000858&quot;, &quot;000725&quot;, &quot;002415&quot;,  // Shenzhen stocks</span>
+<span class="nc" id="L43">        &quot;600036&quot;, &quot;600519&quot;, &quot;600000&quot;, &quot;601318&quot;, &quot;601939&quot;,  // Shanghai stocks</span>
+<span class="nc" id="L44">        &quot;300015&quot;, &quot;300059&quot;, &quot;300750&quot;, &quot;300888&quot;, &quot;300122&quot;   // ChiNext stocks</span>
     };
     
     // Stock names mapping
 <span class="nc" id="L48">    private final String[] STOCK_NAMES = {</span>
-        &quot;Ping An Bank&quot;, &quot;Vanke A&quot;, &quot;Wuliangye&quot;, &quot;East Money&quot;, &quot;Hikvision&quot;,
-        &quot;China Merchants Bank&quot;, &quot;Kweichow Moutai&quot;, &quot;SPD Bank&quot;, &quot;Ping An Insurance&quot;, &quot;CCB&quot;,
-        &quot;East Money Info&quot;, &quot;East Money Tech&quot;, &quot;CATL&quot;, &quot;Kingsoft Office&quot;, &quot;Sanhuan Group&quot;
+<span class="nc" id="L49">        &quot;Ping An Bank&quot;, &quot;Vanke A&quot;, &quot;Wuliangye&quot;, &quot;East Money&quot;, &quot;Hikvision&quot;,</span>
+<span class="nc" id="L50">        &quot;China Merchants Bank&quot;, &quot;Kweichow Moutai&quot;, &quot;SPD Bank&quot;, &quot;Ping An Insurance&quot;, &quot;CCB&quot;,</span>
+<span class="nc" id="L51">        &quot;East Money Info&quot;, &quot;East Money Tech&quot;, &quot;CATL&quot;, &quot;Kingsoft Office&quot;, &quot;Sanhuan Group&quot;</span>
     };
     
     // Buy transaction description templates
 <span class="nc" id="L55">    private final String[] BUY_DESCRIPTIONS = {</span>
-        &quot;Buy {} Stock&quot;, &quot;Increase Holdings {}&quot;, &quot;{} Stock Position Building&quot;, &quot;Regular Investment {}&quot;,
-        &quot;Bottom Fishing {}&quot;, &quot;{} Position Adding&quot;, &quot;Optimistic About {} Prospects&quot;, &quot;{} Value Investment&quot;
+<span class="nc" id="L56">        &quot;Buy {} Stock&quot;, &quot;Increase Holdings {}&quot;, &quot;{} Stock Position Building&quot;, &quot;Regular Investment {}&quot;,</span>
+<span class="nc" id="L57">        &quot;Bottom Fishing {}&quot;, &quot;{} Position Adding&quot;, &quot;Optimistic About {} Prospects&quot;, &quot;{} Value Investment&quot;</span>
     };
     
     // Sell transaction description templates
 <span class="nc" id="L61">    private final String[] SELL_DESCRIPTIONS = {</span>
-        &quot;Sell {} Stock&quot;, &quot;Reduce Holdings {}&quot;, &quot;{} Stock Profit Taking&quot;, &quot;{} Profit Realization&quot;,
-        &quot;{} Stop Loss&quot;, &quot;{} Position Adjustment&quot;, &quot;{} Secure Profits&quot;, &quot;{} Stock Cash Out&quot;
+<span class="nc" id="L62">        &quot;Sell {} Stock&quot;, &quot;Reduce Holdings {}&quot;, &quot;{} Stock Profit Taking&quot;, &quot;{} Profit Realization&quot;,</span>
+<span class="nc" id="L63">        &quot;{} Stop Loss&quot;, &quot;{} Position Adjustment&quot;, &quot;{} Secure Profits&quot;, &quot;{} Stock Cash Out&quot;</span>
     };
     
     @Autowired

@@ -233,7 +233,7 @@ public class TransactionService {
         
 <span class="fc" id="L234">        statistics.put(&quot;buyStatistics&quot;, Map.of(</span>
 <span class="fc" id="L235">                &quot;totalUnits&quot;, totalBuyUnits,</span>
-                &quot;totalAmount&quot;, totalBuyAmount,
+<span class="fc" id="L236">                &quot;totalAmount&quot;, totalBuyAmount,</span>
 <span class="fc" id="L237">                &quot;transactionCount&quot;, buyTransactions.size(),</span>
 <span class="fc bfc" id="L238" title="All 2 branches covered.">                &quot;averagePrice&quot;, totalBuyUnits &gt; 0 ? totalBuyAmount.divide(BigDecimal.valueOf(totalBuyUnits), 4, BigDecimal.ROUND_HALF_UP) : BigDecimal.ZERO</span>
         ));
@@ -247,7 +247,7 @@ public class TransactionService {
         
 <span class="fc" id="L248">        statistics.put(&quot;sellStatistics&quot;, Map.of(</span>
 <span class="fc" id="L249">                &quot;totalUnits&quot;, totalSellUnits,</span>
-                &quot;totalAmount&quot;, totalSellAmount,
+<span class="fc" id="L250">                &quot;totalAmount&quot;, totalSellAmount,</span>
 <span class="fc" id="L251">                &quot;transactionCount&quot;, sellTransactions.size(),</span>
 <span class="fc bfc" id="L252" title="All 2 branches covered.">                &quot;averagePrice&quot;, totalSellUnits &gt; 0 ? totalSellAmount.divide(BigDecimal.valueOf(totalSellUnits), 4, BigDecimal.ROUND_HALF_UP) : BigDecimal.ZERO</span>
         ));
@@ -258,7 +258,7 @@ public class TransactionService {
         
 <span class="fc" id="L259">        statistics.put(&quot;netPosition&quot;, Map.of(</span>
 <span class="fc" id="L260">                &quot;netUnits&quot;, netUnits,</span>
-                &quot;netAmount&quot;, netAmount,
+<span class="fc" id="L261">                &quot;netAmount&quot;, netAmount,</span>
 <span class="fc" id="L262">                &quot;totalTransactions&quot;, todayTransactions.size()</span>
         ));
         

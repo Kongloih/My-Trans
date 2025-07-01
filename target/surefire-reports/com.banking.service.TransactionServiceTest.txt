@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: com.banking.service.TransactionServiceTest
 -------------------------------------------------------------------------------
-Tests run: 17, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.472 s -- in com.banking.service.TransactionServiceTest
+Tests run: 17, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 4.281 s -- in com.banking.service.TransactionServiceTest

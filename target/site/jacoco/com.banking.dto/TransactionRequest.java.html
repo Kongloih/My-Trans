@@ -47,8 +47,8 @@ public class TransactionRequest {
     @Size(max = 255, message = &quot;描述长度不能超过255个字符&quot;)
     private String description;
     
-<span class="fc" id="L50">    @Size(min = 3, max = 3, message = &quot;货币代码必须是3位&quot;)</span>
-    private String currency = &quot;CNY&quot;;
+    @Size(min = 3, max = 3, message = &quot;货币代码必须是3位&quot;)
+<span class="fc" id="L51">    private String currency = &quot;CNY&quot;;</span>
     
     // 构造函数
 <span class="fc" id="L54">    public TransactionRequest() {</span>
