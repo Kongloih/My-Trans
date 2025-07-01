@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GlobalExceptionHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Banking Transaction Management System</a> &gt; <a href="index.source.html" class="el_package">com.banking.exception</a> &gt; <span class="el_source">GlobalExceptionHandler.java</span></div><h1>GlobalExceptionHandler.java</h1><pre class="source lang-java linenums">package com.banking.exception;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+/**
+ * 全局异常处理器
+ * 
+ * @author Kongloih Zhang F
+ */
+@RestControllerAdvice
+<span class="fc" id="L22">public class GlobalExceptionHandler {</span>
+    
+    /**
+     * 处理交易未找到异常
+     * 
+     * @param ex 异常
+     * @return 错误响应
+     */
+    @ExceptionHandler(TransactionNotFoundException.class)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; handleTransactionNotFound(TransactionNotFoundException ex) {
+<span class="nc" id="L32">        Map&lt;String, Object&gt; errorResponse = createErrorResponse(</span>
+                &quot;TRANSACTION_NOT_FOUND&quot;,
+<span class="nc" id="L34">                ex.getMessage(),</span>
+                HttpStatus.NOT_FOUND
+        );
+<span class="nc" id="L37">        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);</span>
+    }
+    
+    /**
+     * 处理重复交易异常
+     * 
+     * @param ex 异常
+     * @return 错误响应
+     */
+    @ExceptionHandler(DuplicateTransactionException.class)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; handleDuplicateTransaction(DuplicateTransactionException ex) {
+<span class="nc" id="L48">        Map&lt;String, Object&gt; errorResponse = createErrorResponse(</span>
+                &quot;DUPLICATE_TRANSACTION&quot;,
+<span class="nc" id="L50">                ex.getMessage(),</span>
+                HttpStatus.CONFLICT
+        );
+<span class="nc" id="L53">        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);</span>
+    }
+    
+    /**
+     * 处理参数验证异常
+     * 
+     * @param ex 异常
+     * @return 错误响应
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; handleValidationException(MethodArgumentNotValidException ex) {
+<span class="nc" id="L64">        BindingResult bindingResult = ex.getBindingResult();</span>
+        
+<span class="nc" id="L66">        String errorMessage = bindingResult.getFieldErrors()</span>
+<span class="nc" id="L67">                .stream()</span>
+<span class="nc" id="L68">                .map(FieldError::getDefaultMessage)</span>
+<span class="nc" id="L69">                .collect(Collectors.joining(&quot;; &quot;));</span>
+        
+<span class="nc" id="L71">        Map&lt;String, String&gt; fieldErrors = bindingResult.getFieldErrors()</span>
+<span class="nc" id="L72">                .stream()</span>
+<span class="nc" id="L73">                .collect(Collectors.toMap(</span>
+                        FieldError::getField,
+                        FieldError::getDefaultMessage,
+<span class="nc" id="L76">                        (existing, replacement) -&gt; existing</span>
+                ));
+        
+<span class="nc" id="L79">        Map&lt;String, Object&gt; errorResponse = createErrorResponse(</span>
+                &quot;VALIDATION_ERROR&quot;,
+                &quot;输入参数验证失败: &quot; + errorMessage,
+                HttpStatus.BAD_REQUEST
+        );
+<span class="nc" id="L84">        errorResponse.put(&quot;fieldErrors&quot;, fieldErrors);</span>
+        
+<span class="nc" id="L86">        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);</span>
+    }
+    
+    /**
+     * 处理非法参数异常
+     * 
+     * @param ex 异常
+     * @return 错误响应
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; handleIllegalArgument(IllegalArgumentException ex) {
+<span class="nc" id="L97">        Map&lt;String, Object&gt; errorResponse = createErrorResponse(</span>
+                &quot;INVALID_ARGUMENT&quot;,
+<span class="nc" id="L99">                ex.getMessage(),</span>
+                HttpStatus.BAD_REQUEST
+        );
+<span class="nc" id="L102">        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);</span>
+    }
+    
+    /**
+     * 处理数字格式异常
+     * 
+     * @param ex 异常
+     * @return 错误响应
+     */
+    @ExceptionHandler(NumberFormatException.class)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; handleNumberFormat(NumberFormatException ex) {
+<span class="nc" id="L113">        Map&lt;String, Object&gt; errorResponse = createErrorResponse(</span>
+                &quot;INVALID_NUMBER_FORMAT&quot;,
+<span class="nc" id="L115">                &quot;数字格式错误: &quot; + ex.getMessage(),</span>
+                HttpStatus.BAD_REQUEST
+        );
+<span class="nc" id="L118">        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);</span>
+    }
+    
+    /**
+     * 处理运行时异常
+     * 
+     * @param ex 异常
+     * @return 错误响应
+     */
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; handleRuntimeException(RuntimeException ex) {
+<span class="nc" id="L129">        Map&lt;String, Object&gt; errorResponse = createErrorResponse(</span>
+                &quot;RUNTIME_ERROR&quot;,
+<span class="nc" id="L131">                &quot;运行时错误: &quot; + ex.getMessage(),</span>
+                HttpStatus.INTERNAL_SERVER_ERROR
+        );
+<span class="nc" id="L134">        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);</span>
+    }
+    
+    /**
+     * 处理通用异常
+     * 
+     * @param ex 异常
+     * @return 错误响应
+     */
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; handleGenericException(Exception ex) {
+<span class="nc" id="L145">        Map&lt;String, Object&gt; errorResponse = createErrorResponse(</span>
+                &quot;INTERNAL_ERROR&quot;,
+                &quot;系统内部错误，请联系管理员&quot;,
+                HttpStatus.INTERNAL_SERVER_ERROR
+        );
+        
+        // 在开发环境可以显示详细错误信息
+<span class="nc" id="L152">        errorResponse.put(&quot;details&quot;, ex.getMessage());</span>
+        
+<span class="nc" id="L154">        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);</span>
+    }
+    
+    /**
+     * 创建错误响应对象
+     * 
+     * @param errorCode 错误代码
+     * @param message 错误消息
+     * @param status HTTP状态
+     * @return 错误响应
+     */
+    private Map&lt;String, Object&gt; createErrorResponse(String errorCode, String message, HttpStatus status) {
+<span class="nc" id="L166">        Map&lt;String, Object&gt; errorResponse = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L167">        errorResponse.put(&quot;success&quot;, false);</span>
+<span class="nc" id="L168">        errorResponse.put(&quot;errorCode&quot;, errorCode);</span>
+<span class="nc" id="L169">        errorResponse.put(&quot;message&quot;, message);</span>
+<span class="nc" id="L170">        errorResponse.put(&quot;timestamp&quot;, LocalDateTime.now());</span>
+<span class="nc" id="L171">        errorResponse.put(&quot;status&quot;, status.value());</span>
+<span class="nc" id="L172">        return errorResponse;</span>
+    }
+} 
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

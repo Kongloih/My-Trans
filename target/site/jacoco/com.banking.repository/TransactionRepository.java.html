@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TransactionRepository.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Banking Transaction Management System</a> &gt; <a href="index.source.html" class="el_package">com.banking.repository</a> &gt; <span class="el_source">TransactionRepository.java</span></div><h1>TransactionRepository.java</h1><pre class="source lang-java linenums">package com.banking.repository;
+
+import com.banking.model.Transaction;
+import com.banking.model.TransactionType;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Repository;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * 股票交易数据访问层
+ * 使用JPA和H2数据库存储
+ * 
+ * @author Kongloih Zhang F
+ */
+@Repository
+public class TransactionRepository {
+    
+    private final TransactionJpaRepository jpaRepository;
+    
+    @Autowired
+<span class="fc" id="L31">    public TransactionRepository(TransactionJpaRepository jpaRepository) {</span>
+<span class="fc" id="L32">        this.jpaRepository = jpaRepository;</span>
+<span class="fc" id="L33">    }</span>
+    
+    /**
+     * 保存交易
+     * 
+     * @param transaction 交易对象
+     * @return 保存后的交易对象
+     */
+    @CacheEvict(value = &quot;transactions&quot;, allEntries = true)
+    public Transaction save(Transaction transaction) {
+        // 设置时间戳
+<span class="pc bpc" id="L44" title="1 of 2 branches missed.">        if (transaction.getTimestamp() == null) {</span>
+<span class="nc" id="L45">            transaction.setTimestamp(LocalDateTime.now());</span>
+        }
+<span class="fc" id="L47">        return jpaRepository.save(transaction);</span>
+    }
+    
+    /**
+     * 根据ID查找交易
+     * 
+     * @param id 交易ID
+     * @return 交易对象（如果存在）
+     */
+    @Cacheable(value = &quot;transactions&quot;, key = &quot;#id&quot;)
+    public Optional&lt;Transaction&gt; findById(Long id) {
+<span class="nc" id="L58">        return jpaRepository.findById(id);</span>
+    }
+    
+    /**
+     * 查找所有交易
+     * 
+     * @return 所有交易列表
+     */
+    @Cacheable(value = &quot;transactions&quot;)
+    public List&lt;Transaction&gt; findAll() {
+<span class="fc" id="L68">        return jpaRepository.findAll(Sort.by(Sort.Direction.DESC, &quot;timestamp&quot;));</span>
+    }
+    
+    /**
+     * 分页查询交易
+     * 
+     * @param page 页码（从0开始）
+     * @param size 每页大小
+     * @return 交易列表
+     */
+    public List&lt;Transaction&gt; findAll(int page, int size) {
+<span class="fc" id="L79">        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, &quot;timestamp&quot;));</span>
+<span class="fc" id="L80">        Page&lt;Transaction&gt; pageResult = jpaRepository.findAll(pageable);</span>
+<span class="fc" id="L81">        return pageResult.getContent();</span>
+    }
+    
+    /**
+     * 根据账户号码查找交易
+     * 
+     * @param accountNumber 账户号码
+     * @return 交易列表
+     */
+    public List&lt;Transaction&gt; findByAccountNumber(String accountNumber) {
+<span class="fc" id="L91">        return jpaRepository.findByAccountNumberOrderByTimestampDesc(accountNumber);</span>
+    }
+    
+    /**
+     * 根据交易类型查找交易
+     * 
+     * @param type 交易类型
+     * @return 交易列表
+     */
+    public List&lt;Transaction&gt; findByType(TransactionType type) {
+<span class="fc" id="L101">        return jpaRepository.findByTransTypeOrderByTimestampDesc(type);</span>
+    }
+    
+    /**
+     * 根据账户号码和交易类型查找交易
+     * 
+     * @param accountNumber 账户号码
+     * @param type 交易类型
+     * @return 交易列表
+     */
+    public List&lt;Transaction&gt; findByAccountNumberAndType(String accountNumber, TransactionType type) {
+<span class="nc" id="L112">        return jpaRepository.findByAccountNumberAndTransTypeOrderByTimestampDesc(accountNumber, type);</span>
+    }
+    
+    /**
+     * 删除交易
+     * 
+     * @param id 交易ID
+     * @return 是否删除成功
+     */
+    @CacheEvict(value = &quot;transactions&quot;, allEntries = true)
+    public boolean deleteById(Long id) {
+<span class="nc bnc" id="L123" title="All 2 branches missed.">        if (jpaRepository.existsById(id)) {</span>
+<span class="nc" id="L124">            jpaRepository.deleteById(id);</span>
+<span class="nc" id="L125">            return true;</span>
+        }
+<span class="nc" id="L127">        return false;</span>
+    }
+    
+    /**
+     * 检查交易是否存在
+     * 
+     * @param id 交易ID
+     * @return 是否存在
+     */
+    public boolean existsById(Long id) {
+<span class="nc" id="L137">        return jpaRepository.existsById(id);</span>
+    }
+    
+    /**
+     * 获取交易总数
+     * 
+     * @return 交易总数
+     */
+    public long count() {
+<span class="fc" id="L146">        return jpaRepository.count();</span>
+    }
+    
+    /**
+     * 清空所有交易（用于测试）
+     */
+    @CacheEvict(value = &quot;transactions&quot;, allEntries = true)
+    public void deleteAll() {
+<span class="nc" id="L154">        jpaRepository.deleteAll();</span>
+<span class="nc" id="L155">    }</span>
+    
+
+    
+    /**
+     * 根据时间范围查找交易
+     * 
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @return 交易列表
+     */
+    public List&lt;Transaction&gt; findByTimestampBetween(LocalDateTime startTime, LocalDateTime endTime) {
+<span class="nc" id="L167">        return jpaRepository.findByTimestampBetweenOrderByTimestampDesc(startTime, endTime);</span>
+    }
+    
+    /**
+     * 根据金额范围查找交易
+     * 
+     * @param minAmount 最小金额
+     * @param maxAmount 最大金额
+     * @return 交易列表
+     */
+    public List&lt;Transaction&gt; findByAmountBetween(BigDecimal minAmount, BigDecimal maxAmount) {
+<span class="nc" id="L178">        return jpaRepository.findByAmountBetweenOrderByTimestampDesc(minAmount, maxAmount);</span>
+    }
+    
+    /**
+     * 查找大额交易
+     * 
+     * @param threshold 金额阈值
+     * @return 交易列表
+     */
+    public List&lt;Transaction&gt; findLargeTransactions(BigDecimal threshold) {
+<span class="nc" id="L188">        return jpaRepository.findByAmountGreaterThanOrderByAmountDesc(threshold);</span>
+    }
+    
+    /**
+     * 根据描述模糊查询
+     * 
+     * @param keyword 关键词
+     * @return 交易列表
+     */
+    public List&lt;Transaction&gt; findByDescriptionContaining(String keyword) {
+<span class="nc" id="L198">        return jpaRepository.findByDescriptionContainingIgnoreCaseOrderByTimestampDesc(keyword);</span>
+    }
+    
+    /**
+     * 获取账户交易数量
+     * 
+     * @param accountNumber 账户号码
+     * @return 交易数量
+     */
+    public Long countByAccountNumber(String accountNumber) {
+<span class="nc" id="L208">        return jpaRepository.countByAccountNumber(accountNumber);</span>
+    }
+    
+    /**
+     * 获取指定时间段内的交易统计
+     * 
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @return 交易数量
+     */
+    public Long countTransactionsBetween(LocalDateTime startTime, LocalDateTime endTime) {
+<span class="nc" id="L219">        return jpaRepository.countTransactionsBetween(startTime, endTime);</span>
+    }
+} 
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

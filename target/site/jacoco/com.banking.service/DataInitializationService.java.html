@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DataInitializationService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Banking Transaction Management System</a> &gt; <a href="index.source.html" class="el_package">com.banking.service</a> &gt; <span class="el_source">DataInitializationService.java</span></div><h1>DataInitializationService.java</h1><pre class="source lang-java linenums">package com.banking.service;
+
+import com.banking.model.Transaction;
+import com.banking.model.TransactionType;
+import com.banking.repository.TransactionJpaRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+/**
+ * Stock trading data initialization service
+ * Used to generate test data and mock data
+ * 
+ * @author Kongloih Zhang F
+ */
+@Service
+@Profile(&quot;!test&quot;) // Only run in non-test environment
+public class DataInitializationService implements CommandLineRunner {
+    
+    private final TransactionJpaRepository transactionRepository;
+<span class="nc" id="L30">    private final Random random = new Random();</span>
+    
+    // Test account numbers
+<span class="nc" id="L33">    private final String[] TEST_ACCOUNTS = {</span>
+        &quot;1234567890123456&quot;, &quot;2345678901234567&quot;, &quot;3456789012345678&quot;, 
+        &quot;4567890123456789&quot;, &quot;5678901234567890&quot;, &quot;6789012345678901&quot;, 
+        &quot;7890123456789012&quot;, &quot;8901234567890123&quot;, &quot;9012345678901234&quot;, 
+        &quot;0123456789012345&quot;
+    };
+    
+    // China stock codes
+<span class="nc" id="L41">    private final String[] SECURITY_CODES = {</span>
+        &quot;000001&quot;, &quot;000002&quot;, &quot;000858&quot;, &quot;000725&quot;, &quot;002415&quot;,  // Shenzhen stocks
+        &quot;600036&quot;, &quot;600519&quot;, &quot;600000&quot;, &quot;601318&quot;, &quot;601939&quot;,  // Shanghai stocks
+        &quot;300015&quot;, &quot;300059&quot;, &quot;300750&quot;, &quot;300888&quot;, &quot;300122&quot;   // ChiNext stocks
+    };
+    
+    // Stock names mapping
+<span class="nc" id="L48">    private final String[] STOCK_NAMES = {</span>
+        &quot;Ping An Bank&quot;, &quot;Vanke A&quot;, &quot;Wuliangye&quot;, &quot;East Money&quot;, &quot;Hikvision&quot;,
+        &quot;China Merchants Bank&quot;, &quot;Kweichow Moutai&quot;, &quot;SPD Bank&quot;, &quot;Ping An Insurance&quot;, &quot;CCB&quot;,
+        &quot;East Money Info&quot;, &quot;East Money Tech&quot;, &quot;CATL&quot;, &quot;Kingsoft Office&quot;, &quot;Sanhuan Group&quot;
+    };
+    
+    // Buy transaction description templates
+<span class="nc" id="L55">    private final String[] BUY_DESCRIPTIONS = {</span>
+        &quot;Buy {} Stock&quot;, &quot;Increase Holdings {}&quot;, &quot;{} Stock Position Building&quot;, &quot;Regular Investment {}&quot;,
+        &quot;Bottom Fishing {}&quot;, &quot;{} Position Adding&quot;, &quot;Optimistic About {} Prospects&quot;, &quot;{} Value Investment&quot;
+    };
+    
+    // Sell transaction description templates
+<span class="nc" id="L61">    private final String[] SELL_DESCRIPTIONS = {</span>
+        &quot;Sell {} Stock&quot;, &quot;Reduce Holdings {}&quot;, &quot;{} Stock Profit Taking&quot;, &quot;{} Profit Realization&quot;,
+        &quot;{} Stop Loss&quot;, &quot;{} Position Adjustment&quot;, &quot;{} Secure Profits&quot;, &quot;{} Stock Cash Out&quot;
+    };
+    
+    @Autowired
+<span class="nc" id="L67">    public DataInitializationService(TransactionJpaRepository transactionRepository) {</span>
+<span class="nc" id="L68">        this.transactionRepository = transactionRepository;</span>
+<span class="nc" id="L69">    }</span>
+    
+    @Override
+    public void run(String... args) throws Exception {
+        // Check if data already exists
+<span class="nc bnc" id="L74" title="All 2 branches missed.">        if (transactionRepository.count() &gt; 0) {</span>
+<span class="nc" id="L75">            System.out.println(&quot;Data already exists in database, skipping initialization&quot;);</span>
+<span class="nc" id="L76">            return;</span>
+        }
+        
+<span class="nc" id="L79">        System.out.println(&quot;Starting stock trading test data initialization...&quot;);</span>
+        
+        // Generate test data
+<span class="nc" id="L82">        List&lt;Transaction&gt; testTransactions = generateTestData();</span>
+        
+        // Save to database
+<span class="nc" id="L85">        transactionRepository.saveAll(testTransactions);</span>
+        
+<span class="nc" id="L87">        System.out.println(&quot;Stock trading test data initialization completed! Generated &quot; + testTransactions.size() + &quot; transaction records&quot;);</span>
+<span class="nc" id="L88">    }</span>
+    
+    /**
+     * Generate test data
+     */
+    private List&lt;Transaction&gt; generateTestData() {
+<span class="nc" id="L94">        List&lt;Transaction&gt; transactions = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L95">        LocalDate today = LocalDate.now();</span>
+        
+        // Generate transaction history for each account
+<span class="nc bnc" id="L98" title="All 2 branches missed.">        for (String accountNumber : TEST_ACCOUNTS) {</span>
+<span class="nc" id="L99">            int transactionCount = 20 + random.nextInt(21); // 20-40 transactions per account</span>
+            
+<span class="nc bnc" id="L101" title="All 2 branches missed.">            for (int i = 0; i &lt; transactionCount; i++) {</span>
+                // Generate random date within past 30 days
+<span class="nc" id="L103">                LocalDate transDate = today.minusDays(random.nextInt(30));</span>
+<span class="nc" id="L104">                Transaction transaction = createRandomStockTransaction(accountNumber, transDate);</span>
+<span class="nc" id="L105">                transactions.add(transaction);</span>
+            }
+        }
+        
+<span class="nc" id="L109">        return transactions;</span>
+    }
+    
+    /**
+     * Create random stock transaction
+     */
+    private Transaction createRandomStockTransaction(String accountNumber, LocalDate transDate) {
+<span class="nc" id="L116">        Transaction transaction = new Transaction();</span>
+<span class="nc" id="L117">        transaction.setAccountNumber(accountNumber);</span>
+        
+        // Randomly select stock
+<span class="nc" id="L120">        int stockIndex = random.nextInt(SECURITY_CODES.length);</span>
+<span class="nc" id="L121">        String securityCode = SECURITY_CODES[stockIndex];</span>
+<span class="nc" id="L122">        String stockName = STOCK_NAMES[stockIndex];</span>
+<span class="nc" id="L123">        transaction.setSecurityCode(securityCode);</span>
+        
+        // Randomly select transaction type
+<span class="nc bnc" id="L126" title="All 2 branches missed.">        TransactionType transType = random.nextBoolean() ? TransactionType.BUY : TransactionType.SELL;</span>
+<span class="nc" id="L127">        transaction.setTransType(transType);</span>
+        
+        // Generate random units (multiples of 100, following A-share trading rules)
+<span class="nc" id="L130">        long unit = (1 + random.nextInt(50)) * 100; // 100-5000 shares</span>
+<span class="nc" id="L131">        transaction.setUnit(unit);</span>
+        
+        // Generate random price (5-200 CNY)
+<span class="nc" id="L134">        BigDecimal price = BigDecimal.valueOf(5 + random.nextDouble() * 195)</span>
+<span class="nc" id="L135">                .setScale(2, RoundingMode.HALF_UP);</span>
+<span class="nc" id="L136">        transaction.setPrice(price);</span>
+        
+        // Calculate total amount = units * price
+<span class="nc" id="L139">        BigDecimal amount = price.multiply(BigDecimal.valueOf(unit));</span>
+<span class="nc" id="L140">        transaction.setAmount(amount);</span>
+        
+        // Set transaction date
+<span class="nc" id="L143">        transaction.setTransDate(transDate);</span>
+        
+        // Set description
+<span class="nc bnc" id="L146" title="All 2 branches missed.">        String[] descriptions = transType == TransactionType.BUY ? BUY_DESCRIPTIONS : SELL_DESCRIPTIONS;</span>
+<span class="nc" id="L147">        String descriptionTemplate = descriptions[random.nextInt(descriptions.length)];</span>
+<span class="nc" id="L148">        String description = descriptionTemplate.replace(&quot;{}&quot;, stockName);</span>
+<span class="nc" id="L149">        transaction.setDescription(description);</span>
+        
+        // Set timestamp (9:30-15:00 on trading day)
+<span class="nc" id="L152">        LocalDateTime timestamp = transDate.atTime(9 + random.nextInt(6), 30 + random.nextInt(30));</span>
+<span class="nc" id="L153">        transaction.setTimestamp(timestamp);</span>
+        
+<span class="nc" id="L155">        transaction.setCurrency(&quot;CNY&quot;);</span>
+        
+<span class="nc" id="L157">        return transaction;</span>
+    }
+} 
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

@@ -1,0 +1,14 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+Banking Transaction Management System,com.banking.repository,TransactionRepository,69,61,3,1,16,12,13,7,11,7
+Banking Transaction Management System,com.banking,TransactionManagementApplication,5,3,0,0,2,1,1,1,1,1
+Banking Transaction Management System,com.banking.exception,GlobalExceptionHandler,155,3,0,0,37,1,9,1,9,1
+Banking Transaction Management System,com.banking.exception,TransactionNotFoundException,5,4,0,0,2,2,1,1,1,1
+Banking Transaction Management System,com.banking.exception,DuplicateTransactionException,9,0,0,0,4,0,2,0,2,0
+Banking Transaction Management System,com.banking.controller,TransactionController,108,355,2,2,21,75,6,12,4,12
+Banking Transaction Management System,com.banking.service,DataInitializationService,464,0,10,0,50,0,9,0,4,0
+Banking Transaction Management System,com.banking.service,TransactionService,55,513,16,32,11,114,16,26,0,18
+Banking Transaction Management System,com.banking.config,CacheConfig,0,32,0,0,0,10,0,2,0,2
+Banking Transaction Management System,com.banking.model,TransactionType,9,33,0,0,2,8,2,3,2,3
+Banking Transaction Management System,com.banking.model,Transaction,102,92,6,0,21,39,10,24,7,24
+Banking Transaction Management System,com.banking.dto,TransactionResponse,8,137,0,0,4,50,2,26,2,26
+Banking Transaction Management System,com.banking.dto,TransactionRequest,24,79,0,0,9,34,1,21,1,21

@@ -1,5 +1,4 @@
 # 忽略构建文件
-target/
 !mvnw*
 !.mvn/
 

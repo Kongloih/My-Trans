@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TransactionService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Banking Transaction Management System</a> &gt; <a href="index.source.html" class="el_package">com.banking.service</a> &gt; <span class="el_source">TransactionService.java</span></div><h1>TransactionService.java</h1><pre class="source lang-java linenums">package com.banking.service;
+
+import com.banking.dto.TransactionRequest;
+import com.banking.dto.TransactionResponse;
+import com.banking.exception.TransactionNotFoundException;
+import com.banking.exception.DuplicateTransactionException;
+import com.banking.model.Transaction;
+import com.banking.model.TransactionType;
+import com.banking.repository.TransactionRepository;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
+/**
+ * 股票交易业务服务层
+ * 
+ * @author Kongloih Zhang F
+ */
+@Service
+public class TransactionService {
+    
+    private final TransactionRepository transactionRepository;
+
+    
+<span class="fc" id="L35">    public TransactionService(TransactionRepository transactionRepository) {</span>
+<span class="fc" id="L36">        this.transactionRepository = transactionRepository;</span>
+<span class="fc" id="L37">    }</span>
+    
+    /**
+     * 创建新股票交易
+     * 
+     * @param request 交易请求
+     * @return 交易响应
+     */
+    @CacheEvict(value = &quot;transactions&quot;, allEntries = true)
+    public TransactionResponse createTransaction(TransactionRequest request) {
+<span class="fc" id="L47">        validateTransactionRequest(request);</span>
+        
+<span class="fc" id="L49">        Transaction transaction = new Transaction();</span>
+<span class="fc" id="L50">        transaction.setAccountNumber(request.getAccountNumber());</span>
+<span class="fc" id="L51">        transaction.setAmount(request.getAmount());</span>
+<span class="fc" id="L52">        transaction.setTransType(request.getTransType());</span>
+<span class="fc" id="L53">        transaction.setUnit(request.getUnit());</span>
+<span class="fc" id="L54">        transaction.setPrice(request.getPrice());</span>
+<span class="pc bpc" id="L55" title="1 of 2 branches missed.">        transaction.setTransDate(request.getTransDate() != null ? request.getTransDate() : LocalDate.now());</span>
+<span class="fc" id="L56">        transaction.setSecurityCode(request.getSecurityCode());</span>
+<span class="fc" id="L57">        transaction.setDescription(request.getDescription());</span>
+<span class="fc" id="L58">        transaction.setCurrency(request.getCurrency());</span>
+<span class="fc" id="L59">        transaction.setTimestamp(LocalDateTime.now());</span>
+        
+        // 验证价格和金额的一致性：amount = unit * price
+<span class="fc" id="L62">        BigDecimal calculatedAmount = BigDecimal.valueOf(transaction.getUnit()).multiply(transaction.getPrice());</span>
+<span class="pc bpc" id="L63" title="1 of 2 branches missed.">        if (transaction.getAmount().compareTo(calculatedAmount) != 0) {</span>
+<span class="nc" id="L64">            throw new IllegalArgumentException(&quot;交易金额必须等于股数 * 价格&quot;);</span>
+        }
+        
+<span class="fc" id="L67">        Transaction savedTransaction = transactionRepository.save(transaction);</span>
+<span class="fc" id="L68">        return new TransactionResponse(savedTransaction);</span>
+    }
+    
+    /**
+     * 更新交易
+     * 
+     * @param id 交易ID
+     * @param request 交易请求
+     * @return 交易响应
+     */
+    @CachePut(value = &quot;transactions&quot;, key = &quot;#id&quot;)
+    public TransactionResponse updateTransaction(Long id, TransactionRequest request) {
+<span class="fc" id="L80">        Transaction existingTransaction = transactionRepository.findById(id)</span>
+<span class="fc" id="L81">                .orElseThrow(() -&gt; new TransactionNotFoundException(&quot;交易ID &quot; + id + &quot; 不存在&quot;));</span>
+        
+<span class="fc" id="L83">        validateTransactionRequest(request);</span>
+        
+        // 更新交易信息
+<span class="fc" id="L86">        existingTransaction.setAccountNumber(request.getAccountNumber());</span>
+<span class="fc" id="L87">        existingTransaction.setAmount(request.getAmount());</span>
+<span class="fc" id="L88">        existingTransaction.setTransType(request.getTransType());</span>
+<span class="fc" id="L89">        existingTransaction.setUnit(request.getUnit());</span>
+<span class="fc" id="L90">        existingTransaction.setPrice(request.getPrice());</span>
+<span class="pc bpc" id="L91" title="1 of 2 branches missed.">        existingTransaction.setTransDate(request.getTransDate() != null ? request.getTransDate() : LocalDate.now());</span>
+<span class="fc" id="L92">        existingTransaction.setSecurityCode(request.getSecurityCode());</span>
+<span class="fc" id="L93">        existingTransaction.setDescription(request.getDescription());</span>
+<span class="fc" id="L94">        existingTransaction.setCurrency(request.getCurrency());</span>
+        
+        // 验证价格和金额的一致性
+<span class="fc" id="L97">        BigDecimal calculatedAmount = BigDecimal.valueOf(existingTransaction.getUnit()).multiply(existingTransaction.getPrice());</span>
+<span class="pc bpc" id="L98" title="1 of 2 branches missed.">        if (existingTransaction.getAmount().compareTo(calculatedAmount) != 0) {</span>
+<span class="nc" id="L99">            throw new IllegalArgumentException(&quot;交易金额必须等于股数 * 价格&quot;);</span>
+        }
+        
+<span class="fc" id="L102">        Transaction updatedTransaction = transactionRepository.save(existingTransaction);</span>
+<span class="fc" id="L103">        return new TransactionResponse(updatedTransaction);</span>
+    }
+    
+    /**
+     * 获取交易详情
+     * 
+     * @param id 交易ID
+     * @return 交易响应
+     */
+    @Cacheable(value = &quot;transactions&quot;, key = &quot;#id&quot;)
+    public TransactionResponse getTransaction(Long id) {
+<span class="fc" id="L114">        Transaction transaction = transactionRepository.findById(id)</span>
+<span class="fc" id="L115">                .orElseThrow(() -&gt; new TransactionNotFoundException(&quot;交易ID &quot; + id + &quot; 不存在&quot;));</span>
+<span class="fc" id="L116">        return new TransactionResponse(transaction);</span>
+    }
+    
+    /**
+     * 获取所有交易
+     * 
+     * @return 交易响应列表
+     */
+    @Cacheable(value = &quot;transactions&quot;)
+    public List&lt;TransactionResponse&gt; getAllTransactions() {
+<span class="fc" id="L126">        return transactionRepository.findAll()</span>
+<span class="fc" id="L127">                .stream()</span>
+<span class="fc" id="L128">                .map(TransactionResponse::new)</span>
+<span class="fc" id="L129">                .collect(Collectors.toList());</span>
+    }
+    
+    /**
+     * 分页获取交易
+     * 
+     * @param page 页码
+     * @param size 每页大小
+     * @return 交易响应列表
+     */
+    public List&lt;TransactionResponse&gt; getTransactions(int page, int size) {
+<span class="fc bfc" id="L140" title="All 4 branches covered.">        if (page &lt; 0 || size &lt;= 0) {</span>
+<span class="fc" id="L141">            throw new IllegalArgumentException(&quot;页码必须非负，每页大小必须大于0&quot;);</span>
+        }
+        
+<span class="fc" id="L144">        return transactionRepository.findAll(page, size)</span>
+<span class="fc" id="L145">                .stream()</span>
+<span class="fc" id="L146">                .map(TransactionResponse::new)</span>
+<span class="fc" id="L147">                .collect(Collectors.toList());</span>
+    }
+    
+    /**
+     * 根据账户号码获取交易
+     * 
+     * @param accountNumber 账户号码
+     * @return 交易响应列表
+     */
+    public List&lt;TransactionResponse&gt; getTransactionsByAccount(String accountNumber) {
+<span class="fc bfc" id="L157" title="All 2 branches covered.">        if (StringUtils.isBlank(accountNumber)) {</span>
+<span class="fc" id="L158">            throw new IllegalArgumentException(&quot;账户号码不能为空&quot;);</span>
+        }
+        
+<span class="fc" id="L161">        return transactionRepository.findByAccountNumber(accountNumber)</span>
+<span class="fc" id="L162">                .stream()</span>
+<span class="fc" id="L163">                .map(TransactionResponse::new)</span>
+<span class="fc" id="L164">                .collect(Collectors.toList());</span>
+    }
+    
+    /**
+     * 根据交易类型获取交易
+     * 
+     * @param type 交易类型
+     * @return 交易响应列表
+     */
+    public List&lt;TransactionResponse&gt; getTransactionsByType(TransactionType type) {
+<span class="fc" id="L174">        return transactionRepository.findByType(type)</span>
+<span class="fc" id="L175">                .stream()</span>
+<span class="fc" id="L176">                .map(TransactionResponse::new)</span>
+<span class="fc" id="L177">                .collect(Collectors.toList());</span>
+    }
+    
+    /**
+     * 删除交易
+     * 
+     * @param id 交易ID
+     */
+    @CacheEvict(value = &quot;transactions&quot;, allEntries = true)
+    public void deleteTransaction(Long id) {
+<span class="fc" id="L187">        Transaction transaction = transactionRepository.findById(id)</span>
+<span class="fc" id="L188">                .orElseThrow(() -&gt; new TransactionNotFoundException(&quot;交易ID &quot; + id + &quot; 不存在&quot;));</span>
+        
+<span class="fc" id="L190">        transactionRepository.deleteById(id);</span>
+<span class="fc" id="L191">    }</span>
+    
+    /**
+     * 获取股票交易统计
+     * 计算同一个客户账户当天成交的股票股数和成交总金额，按照买入/卖出累加，按照股票代码分组
+     * 
+     * @param securityCode 股票代码
+     * @param accountNumber 账户号码
+     * @return 股票交易统计
+     */
+    @Cacheable(value = &quot;transactions&quot;, key = &quot;'security_stats_' + #securityCode + '_' + #accountNumber&quot;)
+    public Map&lt;String, Object&gt; getSecurityStatistics(String securityCode, String accountNumber) {
+<span class="pc bpc" id="L203" title="1 of 2 branches missed.">        if (StringUtils.isBlank(securityCode)) {</span>
+<span class="nc" id="L204">            throw new IllegalArgumentException(&quot;股票代码不能为空&quot;);</span>
+        }
+<span class="pc bpc" id="L206" title="1 of 2 branches missed.">        if (StringUtils.isBlank(accountNumber)) {</span>
+<span class="nc" id="L207">            throw new IllegalArgumentException(&quot;账户号码不能为空&quot;);</span>
+        }
+        
+<span class="fc" id="L210">        LocalDate today = LocalDate.now();</span>
+<span class="fc" id="L211">        List&lt;Transaction&gt; todayTransactions = transactionRepository.findAll()</span>
+<span class="fc" id="L212">                .stream()</span>
+<span class="fc" id="L213">                .filter(t -&gt; t.getSecurityCode().equals(securityCode))</span>
+<span class="fc" id="L214">                .filter(t -&gt; t.getAccountNumber().equals(accountNumber))</span>
+<span class="fc" id="L215">                .filter(t -&gt; t.getTransDate().equals(today))</span>
+<span class="fc" id="L216">                .collect(Collectors.toList());</span>
+        
+        // 按买入/卖出分组计算
+<span class="fc" id="L219">        Map&lt;TransactionType, List&lt;Transaction&gt;&gt; groupedByType = todayTransactions.stream()</span>
+<span class="fc" id="L220">                .collect(Collectors.groupingBy(Transaction::getTransType));</span>
+        
+<span class="fc" id="L222">        Map&lt;String, Object&gt; statistics = new ConcurrentHashMap&lt;&gt;();</span>
+<span class="fc" id="L223">        statistics.put(&quot;securityCode&quot;, securityCode);</span>
+<span class="fc" id="L224">        statistics.put(&quot;accountNumber&quot;, accountNumber);</span>
+<span class="fc" id="L225">        statistics.put(&quot;transDate&quot;, today);</span>
+        
+        // 买入统计
+<span class="fc" id="L228">        List&lt;Transaction&gt; buyTransactions = groupedByType.getOrDefault(TransactionType.BUY, List.of());</span>
+<span class="fc" id="L229">        long totalBuyUnits = buyTransactions.stream().mapToLong(Transaction::getUnit).sum();</span>
+<span class="fc" id="L230">        BigDecimal totalBuyAmount = buyTransactions.stream()</span>
+<span class="fc" id="L231">                .map(Transaction::getAmount)</span>
+<span class="fc" id="L232">                .reduce(BigDecimal.ZERO, BigDecimal::add);</span>
+        
+<span class="fc" id="L234">        statistics.put(&quot;buyStatistics&quot;, Map.of(</span>
+<span class="fc" id="L235">                &quot;totalUnits&quot;, totalBuyUnits,</span>
+                &quot;totalAmount&quot;, totalBuyAmount,
+<span class="fc" id="L237">                &quot;transactionCount&quot;, buyTransactions.size(),</span>
+<span class="fc bfc" id="L238" title="All 2 branches covered.">                &quot;averagePrice&quot;, totalBuyUnits &gt; 0 ? totalBuyAmount.divide(BigDecimal.valueOf(totalBuyUnits), 4, BigDecimal.ROUND_HALF_UP) : BigDecimal.ZERO</span>
+        ));
+        
+        // 卖出统计
+<span class="fc" id="L242">        List&lt;Transaction&gt; sellTransactions = groupedByType.getOrDefault(TransactionType.SELL, List.of());</span>
+<span class="fc" id="L243">        long totalSellUnits = sellTransactions.stream().mapToLong(Transaction::getUnit).sum();</span>
+<span class="fc" id="L244">        BigDecimal totalSellAmount = sellTransactions.stream()</span>
+<span class="fc" id="L245">                .map(Transaction::getAmount)</span>
+<span class="fc" id="L246">                .reduce(BigDecimal.ZERO, BigDecimal::add);</span>
+        
+<span class="fc" id="L248">        statistics.put(&quot;sellStatistics&quot;, Map.of(</span>
+<span class="fc" id="L249">                &quot;totalUnits&quot;, totalSellUnits,</span>
+                &quot;totalAmount&quot;, totalSellAmount,
+<span class="fc" id="L251">                &quot;transactionCount&quot;, sellTransactions.size(),</span>
+<span class="fc bfc" id="L252" title="All 2 branches covered.">                &quot;averagePrice&quot;, totalSellUnits &gt; 0 ? totalSellAmount.divide(BigDecimal.valueOf(totalSellUnits), 4, BigDecimal.ROUND_HALF_UP) : BigDecimal.ZERO</span>
+        ));
+        
+        // 净持仓统计
+<span class="fc" id="L256">        long netUnits = totalBuyUnits - totalSellUnits;</span>
+<span class="fc" id="L257">        BigDecimal netAmount = totalBuyAmount.subtract(totalSellAmount);</span>
+        
+<span class="fc" id="L259">        statistics.put(&quot;netPosition&quot;, Map.of(</span>
+<span class="fc" id="L260">                &quot;netUnits&quot;, netUnits,</span>
+                &quot;netAmount&quot;, netAmount,
+<span class="fc" id="L262">                &quot;totalTransactions&quot;, todayTransactions.size()</span>
+        ));
+        
+<span class="fc" id="L265">        return statistics;</span>
+    }
+    
+    /**
+     * 获取交易总数
+     * 
+     * @return 交易总数
+     */
+    public long getTransactionCount() {
+<span class="fc" id="L274">        return transactionRepository.count();</span>
+    }
+    
+    /**
+     * 验证交易请求
+     * 
+     * @param request 交易请求
+     */
+    private void validateTransactionRequest(TransactionRequest request) {
+<span class="pc bpc" id="L283" title="1 of 2 branches missed.">        if (request == null) {</span>
+<span class="nc" id="L284">            throw new IllegalArgumentException(&quot;交易请求不能为空&quot;);</span>
+        }
+        
+<span class="fc bfc" id="L287" title="All 2 branches covered.">        if (StringUtils.isBlank(request.getAccountNumber())) {</span>
+<span class="fc" id="L288">            throw new IllegalArgumentException(&quot;账户号码不能为空&quot;);</span>
+        }
+        
+<span class="pc bpc" id="L291" title="1 of 4 branches missed.">        if (request.getAmount() == null || request.getAmount().compareTo(BigDecimal.ZERO) &lt;= 0) {</span>
+<span class="fc" id="L292">            throw new IllegalArgumentException(&quot;交易金额必须大于0&quot;);</span>
+        }
+        
+<span class="pc bpc" id="L295" title="1 of 2 branches missed.">        if (request.getTransType() == null) {</span>
+<span class="nc" id="L296">            throw new IllegalArgumentException(&quot;交易类型不能为空&quot;);</span>
+        }
+        
+<span class="pc bpc" id="L299" title="2 of 4 branches missed.">        if (request.getUnit() == null || request.getUnit() &lt;= 0) {</span>
+<span class="nc" id="L300">            throw new IllegalArgumentException(&quot;成交股数必须大于0&quot;);</span>
+        }
+        
+<span class="pc bpc" id="L303" title="2 of 4 branches missed.">        if (request.getPrice() == null || request.getPrice().compareTo(BigDecimal.ZERO) &lt;= 0) {</span>
+<span class="nc" id="L304">            throw new IllegalArgumentException(&quot;成交价格必须大于0&quot;);</span>
+        }
+        
+<span class="pc bpc" id="L307" title="1 of 2 branches missed.">        if (StringUtils.isBlank(request.getSecurityCode())) {</span>
+<span class="nc" id="L308">            throw new IllegalArgumentException(&quot;股票代码不能为空&quot;);</span>
+        }
+        
+<span class="pc bpc" id="L311" title="1 of 2 branches missed.">        if (StringUtils.isBlank(request.getCurrency())) {</span>
+<span class="nc" id="L312">            request.setCurrency(&quot;CNY&quot;);</span>
+        }
+        
+        // 验证交易类型只能是买入或卖出
+<span class="pc bpc" id="L316" title="1 of 4 branches missed.">        if (request.getTransType() != TransactionType.BUY &amp;&amp; request.getTransType() != TransactionType.SELL) {</span>
+<span class="nc" id="L317">            throw new IllegalArgumentException(&quot;交易类型只能是买入(BUY)或卖出(SELL)&quot;);</span>
+        }
+<span class="fc" id="L319">    }</span>
+    
+
+} 
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

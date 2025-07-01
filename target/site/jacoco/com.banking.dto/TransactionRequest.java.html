@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TransactionRequest.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Banking Transaction Management System</a> &gt; <a href="index.source.html" class="el_package">com.banking.dto</a> &gt; <span class="el_source">TransactionRequest.java</span></div><h1>TransactionRequest.java</h1><pre class="source lang-java linenums">package com.banking.dto;
+
+import com.banking.model.TransactionType;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+/**
+ * 交易请求DTO
+ * 
+ * @author Kongloih Zhang F
+ */
+public class TransactionRequest {
+    
+    @NotBlank(message = &quot;账户号码不能为空&quot;)
+    @Size(min = 10, max = 20, message = &quot;账户号码长度必须在10-20位之间&quot;)
+    private String accountNumber;
+    
+    @NotNull(message = &quot;交易金额不能为空&quot;)
+    @DecimalMin(value = &quot;0.01&quot;, message = &quot;交易金额必须大于0&quot;)
+    private BigDecimal amount;
+    
+    @NotNull(message = &quot;交易类型不能为空&quot;)
+    private TransactionType transType;
+    
+    @NotNull(message = &quot;成交股数不能为空&quot;)
+    @DecimalMin(value = &quot;1&quot;, message = &quot;成交股数必须大于0&quot;)
+    private Long unit;
+    
+    @NotNull(message = &quot;成交价格不能为空&quot;)
+    @DecimalMin(value = &quot;0.01&quot;, message = &quot;成交价格必须大于0&quot;)
+    private BigDecimal price;
+    
+    @NotNull(message = &quot;成交日期不能为空&quot;)
+    @JsonFormat(pattern = &quot;yyyy-MM-dd&quot;)
+    private LocalDate transDate;
+    
+    @NotBlank(message = &quot;股票代码不能为空&quot;)
+    @Size(min = 1, max = 20, message = &quot;股票代码长度必须在1-20位之间&quot;)
+    private String securityCode;
+    
+    @Size(max = 255, message = &quot;描述长度不能超过255个字符&quot;)
+    private String description;
+    
+<span class="fc" id="L50">    @Size(min = 3, max = 3, message = &quot;货币代码必须是3位&quot;)</span>
+    private String currency = &quot;CNY&quot;;
+    
+    // 构造函数
+<span class="fc" id="L54">    public TransactionRequest() {</span>
+<span class="fc" id="L55">        this.transDate = LocalDate.now();</span>
+<span class="fc" id="L56">    }</span>
+    
+    public TransactionRequest(String accountNumber, BigDecimal amount, 
+                             TransactionType transType, String description,
+                             Long unit, BigDecimal price, String securityCode) {
+<span class="nc" id="L61">        this();</span>
+<span class="nc" id="L62">        this.accountNumber = accountNumber;</span>
+<span class="nc" id="L63">        this.amount = amount;</span>
+<span class="nc" id="L64">        this.transType = transType;</span>
+<span class="nc" id="L65">        this.description = description;</span>
+<span class="nc" id="L66">        this.unit = unit;</span>
+<span class="nc" id="L67">        this.price = price;</span>
+<span class="nc" id="L68">        this.securityCode = securityCode;</span>
+<span class="nc" id="L69">    }</span>
+    
+    // Getters and Setters
+    public String getAccountNumber() {
+<span class="fc" id="L73">        return accountNumber;</span>
+    }
+    
+    public void setAccountNumber(String accountNumber) {
+<span class="fc" id="L77">        this.accountNumber = accountNumber;</span>
+<span class="fc" id="L78">    }</span>
+    
+    public BigDecimal getAmount() {
+<span class="fc" id="L81">        return amount;</span>
+    }
+    
+    public void setAmount(BigDecimal amount) {
+<span class="fc" id="L85">        this.amount = amount;</span>
+<span class="fc" id="L86">    }</span>
+    
+    public TransactionType getTransType() {
+<span class="fc" id="L89">        return transType;</span>
+    }
+    
+    public void setTransType(TransactionType transType) {
+<span class="fc" id="L93">        this.transType = transType;</span>
+<span class="fc" id="L94">    }</span>
+    
+    // 为了向后兼容，保留type的getter和setter
+    @Deprecated
+    public TransactionType getType() {
+<span class="fc" id="L99">        return transType;</span>
+    }
+    
+    @Deprecated
+    public void setType(TransactionType type) {
+<span class="fc" id="L104">        this.transType = type;</span>
+<span class="fc" id="L105">    }</span>
+    
+    public Long getUnit() {
+<span class="fc" id="L108">        return unit;</span>
+    }
+    
+    public void setUnit(Long unit) {
+<span class="fc" id="L112">        this.unit = unit;</span>
+<span class="fc" id="L113">    }</span>
+    
+    public BigDecimal getPrice() {
+<span class="fc" id="L116">        return price;</span>
+    }
+    
+    public void setPrice(BigDecimal price) {
+<span class="fc" id="L120">        this.price = price;</span>
+<span class="fc" id="L121">    }</span>
+    
+    public LocalDate getTransDate() {
+<span class="fc" id="L124">        return transDate;</span>
+    }
+    
+    public void setTransDate(LocalDate transDate) {
+<span class="fc" id="L128">        this.transDate = transDate;</span>
+<span class="fc" id="L129">    }</span>
+    
+    public String getSecurityCode() {
+<span class="fc" id="L132">        return securityCode;</span>
+    }
+    
+    public void setSecurityCode(String securityCode) {
+<span class="fc" id="L136">        this.securityCode = securityCode;</span>
+<span class="fc" id="L137">    }</span>
+    
+    public String getDescription() {
+<span class="fc" id="L140">        return description;</span>
+    }
+    
+    public void setDescription(String description) {
+<span class="fc" id="L144">        this.description = description;</span>
+<span class="fc" id="L145">    }</span>
+    
+    public String getCurrency() {
+<span class="fc" id="L148">        return currency;</span>
+    }
+    
+    public void setCurrency(String currency) {
+<span class="fc" id="L152">        this.currency = currency;</span>
+<span class="fc" id="L153">    }</span>
+} 
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="zh"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TransactionController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">Banking Transaction Management System</a> &gt; <a href="index.source.html" class="el_package">com.banking.controller</a> &gt; <span class="el_source">TransactionController.java</span></div><h1>TransactionController.java</h1><pre class="source lang-java linenums">package com.banking.controller;
+
+import com.banking.dto.TransactionRequest;
+import com.banking.dto.TransactionResponse;
+import com.banking.exception.TransactionNotFoundException;
+import com.banking.exception.DuplicateTransactionException;
+import com.banking.model.TransactionType;
+import com.banking.service.TransactionService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.*;
+
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * 交易管理REST API控制器
+ * 
+ * @author Kongloih Zhang F
+ */
+@RestController
+@RequestMapping(&quot;/api/transactions&quot;)
+@Tag(name = &quot;交易管理&quot;, description = &quot;股票交易管理API&quot;)
+public class TransactionController {
+    
+    private final TransactionService transactionService;
+    
+<span class="fc" id="L35">    public TransactionController(TransactionService transactionService) {</span>
+<span class="fc" id="L36">        this.transactionService = transactionService;</span>
+<span class="fc" id="L37">    }</span>
+    
+    /**
+     * 创建新交易
+     * 
+     * @param request 交易请求
+     * @return 创建的交易响应
+     */
+    @PostMapping
+    @Operation(summary = &quot;创建交易&quot;, description = &quot;创建一个新的股票交易&quot;)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; createTransaction(
+            @Valid @RequestBody TransactionRequest request) {
+        
+<span class="fc" id="L50">        TransactionResponse response = transactionService.createTransaction(request);</span>
+        
+<span class="fc" id="L52">        Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L53">        result.put(&quot;success&quot;, true);</span>
+<span class="fc" id="L54">        result.put(&quot;message&quot;, &quot;交易创建成功&quot;);</span>
+<span class="fc" id="L55">        result.put(&quot;data&quot;, response);</span>
+        
+<span class="fc" id="L57">        return ResponseEntity.status(HttpStatus.CREATED).body(result);</span>
+    }
+    
+    /**
+     * 获取交易详情
+     * 
+     * @param id 交易ID
+     * @return 交易详情
+     */
+    @GetMapping(&quot;/{id}&quot;)
+    @Operation(summary = &quot;获取交易详情&quot;, description = &quot;根据交易ID获取交易详细信息&quot;)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; getTransaction(
+            @Parameter(description = &quot;交易ID&quot;) @PathVariable Long id) {
+        
+<span class="fc" id="L71">        TransactionResponse response = transactionService.getTransaction(id);</span>
+        
+<span class="fc" id="L73">        Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L74">        result.put(&quot;success&quot;, true);</span>
+<span class="fc" id="L75">        result.put(&quot;message&quot;, &quot;获取交易详情成功&quot;);</span>
+<span class="fc" id="L76">        result.put(&quot;data&quot;, response);</span>
+        
+<span class="fc" id="L78">        return ResponseEntity.ok(result);</span>
+    }
+    
+    /**
+     * 更新交易
+     * 
+     * @param id 交易ID
+     * @param request 交易请求
+     * @return 更新后的交易响应
+     */
+    @PutMapping(&quot;/{id}&quot;)
+    @Operation(summary = &quot;更新交易&quot;, description = &quot;更新指定ID的交易信息&quot;)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; updateTransaction(
+            @Parameter(description = &quot;交易ID&quot;) @PathVariable Long id,
+            @Valid @RequestBody TransactionRequest request) {
+        
+<span class="fc" id="L94">        TransactionResponse response = transactionService.updateTransaction(id, request);</span>
+        
+<span class="fc" id="L96">        Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L97">        result.put(&quot;success&quot;, true);</span>
+<span class="fc" id="L98">        result.put(&quot;message&quot;, &quot;交易更新成功&quot;);</span>
+<span class="fc" id="L99">        result.put(&quot;data&quot;, response);</span>
+        
+<span class="fc" id="L101">        return ResponseEntity.ok(result);</span>
+    }
+    
+    /**
+     * 删除交易
+     * 
+     * @param id 交易ID
+     * @return 删除结果
+     */
+    @DeleteMapping(&quot;/{id}&quot;)
+    @Operation(summary = &quot;删除交易&quot;, description = &quot;删除指定ID的交易&quot;)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; deleteTransaction(
+            @Parameter(description = &quot;交易ID&quot;) @PathVariable Long id) {
+        
+<span class="fc" id="L115">        transactionService.deleteTransaction(id);</span>
+        
+<span class="fc" id="L117">        Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L118">        result.put(&quot;success&quot;, true);</span>
+<span class="fc" id="L119">        result.put(&quot;message&quot;, &quot;交易删除成功&quot;);</span>
+        
+<span class="fc" id="L121">        return ResponseEntity.ok(result);</span>
+    }
+    
+    /**
+     * 获取所有交易（分页）
+     * 
+     * @param page 页码（从0开始）
+     * @param size 每页大小
+     * @return 交易列表
+     */
+    @GetMapping
+    @Operation(summary = &quot;获取交易列表&quot;, description = &quot;分页获取所有交易列表&quot;)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; getTransactions(
+            @Parameter(description = &quot;页码，从0开始&quot;) @RequestParam(defaultValue = &quot;0&quot;) int page,
+            @Parameter(description = &quot;每页大小&quot;) @RequestParam(defaultValue = &quot;10&quot;) int size) {
+        
+        List&lt;TransactionResponse&gt; transactions;
+<span class="fc" id="L138">        long totalCount = transactionService.getTransactionCount();</span>
+        
+<span class="pc bpc" id="L140" title="2 of 4 branches missed.">        if (page == 0 &amp;&amp; size == Integer.MAX_VALUE) {</span>
+            // 获取所有交易
+<span class="nc" id="L142">            transactions = transactionService.getAllTransactions();</span>
+        } else {
+            // 分页获取
+<span class="fc" id="L145">            transactions = transactionService.getTransactions(page, size);</span>
+        }
+        
+<span class="fc" id="L148">        Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L149">        result.put(&quot;success&quot;, true);</span>
+<span class="fc" id="L150">        result.put(&quot;message&quot;, &quot;获取交易列表成功&quot;);</span>
+<span class="fc" id="L151">        result.put(&quot;data&quot;, transactions);</span>
+<span class="fc" id="L152">        result.put(&quot;pagination&quot;, Map.of(</span>
+<span class="fc" id="L153">                &quot;page&quot;, page,</span>
+<span class="fc" id="L154">                &quot;size&quot;, size,</span>
+<span class="fc" id="L155">                &quot;total&quot;, totalCount,</span>
+<span class="fc" id="L156">                &quot;totalPages&quot;, (totalCount + size - 1) / size</span>
+        ));
+        
+<span class="fc" id="L159">        return ResponseEntity.ok(result);</span>
+    }
+    
+    /**
+     * 根据账户号码获取交易
+     * 
+     * @param accountNumber 账户号码
+     * @return 交易列表
+     */
+    @GetMapping(&quot;/account/{accountNumber}&quot;)
+    @Operation(summary = &quot;根据账户获取交易&quot;, description = &quot;获取指定账户的所有交易&quot;)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; getTransactionsByAccount(
+            @Parameter(description = &quot;账户号码&quot;) @PathVariable String accountNumber) {
+        
+<span class="fc" id="L173">        List&lt;TransactionResponse&gt; transactions = transactionService.getTransactionsByAccount(accountNumber);</span>
+        
+<span class="fc" id="L175">        Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L176">        result.put(&quot;success&quot;, true);</span>
+<span class="fc" id="L177">        result.put(&quot;message&quot;, &quot;获取账户交易成功&quot;);</span>
+<span class="fc" id="L178">        result.put(&quot;data&quot;, transactions);</span>
+        
+<span class="fc" id="L180">        return ResponseEntity.ok(result);</span>
+    }
+    
+    /**
+     * 根据交易类型获取交易
+     * 
+     * @param type 交易类型
+     * @return 交易列表
+     */
+    @GetMapping(&quot;/type/{type}&quot;)
+    @Operation(summary = &quot;根据类型获取交易&quot;, description = &quot;获取指定类型的所有交易&quot;)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; getTransactionsByType(
+            @Parameter(description = &quot;交易类型&quot;) @PathVariable TransactionType type) {
+        
+<span class="fc" id="L194">        List&lt;TransactionResponse&gt; transactions = transactionService.getTransactionsByType(type);</span>
+        
+<span class="fc" id="L196">        Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L197">        result.put(&quot;success&quot;, true);</span>
+<span class="fc" id="L198">        result.put(&quot;message&quot;, &quot;获取&quot; + type.getChineseName() + &quot;交易成功&quot;);</span>
+<span class="fc" id="L199">        result.put(&quot;data&quot;, transactions);</span>
+        
+<span class="fc" id="L201">        return ResponseEntity.ok(result);</span>
+    }
+    
+    /**
+     * 根据股票代码获取交易统计
+     * 
+     * @param securityCode 股票代码
+     * @param accountNumber 账户号码
+     * @return 股票交易统计
+     */
+    @GetMapping(&quot;/security/{securityCode}/account/{accountNumber}/statistics&quot;)
+    @Operation(summary = &quot;获取股票交易统计&quot;, description = &quot;获取指定股票和账户的当天交易统计&quot;)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; getSecurityStatistics(
+            @Parameter(description = &quot;股票代码&quot;) @PathVariable String securityCode,
+            @Parameter(description = &quot;账户号码&quot;) @PathVariable String accountNumber) {
+        
+<span class="fc" id="L217">        Map&lt;String, Object&gt; statistics = transactionService.getSecurityStatistics(securityCode, accountNumber);</span>
+        
+<span class="fc" id="L219">        Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L220">        result.put(&quot;success&quot;, true);</span>
+<span class="fc" id="L221">        result.put(&quot;message&quot;, &quot;获取股票交易统计成功&quot;);</span>
+<span class="fc" id="L222">        result.put(&quot;data&quot;, statistics);</span>
+        
+<span class="fc" id="L224">        return ResponseEntity.ok(result);</span>
+    }
+    
+    /**
+     * 获取交易统计信息
+     * 
+     * @return 统计信息
+     */
+    @GetMapping(&quot;/statistics&quot;)
+    @Operation(summary = &quot;获取交易统计&quot;, description = &quot;获取交易系统的统计信息&quot;)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; getStatistics() {
+        
+<span class="fc" id="L236">        long totalTransactions = transactionService.getTransactionCount();</span>
+        
+<span class="fc" id="L238">        Map&lt;String, Object&gt; statistics = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L239">        statistics.put(&quot;totalTransactions&quot;, totalTransactions);</span>
+<span class="fc" id="L240">        statistics.put(&quot;transactionTypes&quot;, TransactionType.values());</span>
+        
+<span class="fc" id="L242">        Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L243">        result.put(&quot;success&quot;, true);</span>
+<span class="fc" id="L244">        result.put(&quot;message&quot;, &quot;获取统计信息成功&quot;);</span>
+<span class="fc" id="L245">        result.put(&quot;data&quot;, statistics);</span>
+        
+<span class="fc" id="L247">        return ResponseEntity.ok(result);</span>
+    }
+    
+    // ==================== 异常处理器 ====================
+    
+    /**
+     * 处理交易未找到异常
+     */
+    @ExceptionHandler(TransactionNotFoundException.class)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; handleTransactionNotFound(TransactionNotFoundException ex) {
+<span class="nc" id="L257">        Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L258">        result.put(&quot;success&quot;, false);</span>
+<span class="nc" id="L259">        result.put(&quot;errorCode&quot;, &quot;TRANSACTION_NOT_FOUND&quot;);</span>
+<span class="nc" id="L260">        result.put(&quot;message&quot;, ex.getMessage());</span>
+        
+<span class="nc" id="L262">        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(result);</span>
+    }
+    
+    /**
+     * 处理重复交易异常
+     */
+    @ExceptionHandler(DuplicateTransactionException.class)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; handleDuplicateTransaction(DuplicateTransactionException ex) {
+<span class="nc" id="L270">        Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L271">        result.put(&quot;success&quot;, false);</span>
+<span class="nc" id="L272">        result.put(&quot;errorCode&quot;, &quot;DUPLICATE_TRANSACTION&quot;);</span>
+<span class="nc" id="L273">        result.put(&quot;message&quot;, ex.getMessage());</span>
+        
+<span class="nc" id="L275">        return ResponseEntity.status(HttpStatus.CONFLICT).body(result);</span>
+    }
+    
+    /**
+     * 处理参数校验异常
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; handleValidationException(MethodArgumentNotValidException ex) {
+<span class="fc" id="L283">        Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L284">        result.put(&quot;success&quot;, false);</span>
+<span class="fc" id="L285">        result.put(&quot;errorCode&quot;, &quot;VALIDATION_ERROR&quot;);</span>
+<span class="fc" id="L286">        result.put(&quot;message&quot;, &quot;参数校验失败&quot;);</span>
+        
+<span class="fc" id="L288">        Map&lt;String, String&gt; fieldErrors = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L289">        ex.getBindingResult().getFieldErrors().forEach(error -&gt;</span>
+<span class="fc" id="L290">                fieldErrors.put(error.getField(), error.getDefaultMessage()));</span>
+<span class="fc" id="L291">        result.put(&quot;fieldErrors&quot;, fieldErrors);</span>
+        
+<span class="fc" id="L293">        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);</span>
+    }
+    
+    /**
+     * 处理非法参数异常
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; handleIllegalArgument(IllegalArgumentException ex) {
+<span class="nc" id="L301">        Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L302">        result.put(&quot;success&quot;, false);</span>
+<span class="nc" id="L303">        result.put(&quot;errorCode&quot;, &quot;INVALID_ARGUMENT&quot;);</span>
+<span class="nc" id="L304">        result.put(&quot;message&quot;, ex.getMessage());</span>
+        
+<span class="nc" id="L306">        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);</span>
+    }
+    
+    /**
+     * 处理通用异常
+     */
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity&lt;Map&lt;String, Object&gt;&gt; handleGenericException(Exception ex) {
+<span class="nc" id="L314">        Map&lt;String, Object&gt; result = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L315">        result.put(&quot;success&quot;, false);</span>
+<span class="nc" id="L316">        result.put(&quot;errorCode&quot;, &quot;INTERNAL_SERVER_ERROR&quot;);</span>
+<span class="nc" id="L317">        result.put(&quot;message&quot;, &quot;服务器内部错误&quot;);</span>
+        
+<span class="nc" id="L319">        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);</span>
+    }
+} 
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
