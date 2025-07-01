@@ -1,20 +1,21 @@
-# 银行交易管理系统
+# 股票交易管理系统
 
-一个基于Spring Boot的简单银行交易管理系统，支持交易的创建、查询、更新和删除操作。
+一个基于Spring Boot的现代化股票交易管理系统，支持股票买卖交易的创建、查询、更新和删除操作，以及股票交易统计分析。
 
 ## 功能特性
 
-- ✅ **交易管理**: 创建、查询、更新、删除交易
-- ✅ **账户余额跟踪**: 实时计算和显示账户余额
+- ✅ **股票交易管理**: 创建、查询、更新、删除股票交易记录
+- ✅ **交易统计分析**: 按股票代码和账户统计当天交易数据
+- ✅ **多字段支持**: 成交股数、成交价格、成交日期、股票代码等完整信息
 - ✅ **数据验证**: 完整的输入验证和错误处理
 - ✅ **数据持久化**: H2数据库 + JPA + Caffeine缓存
-- ✅ **Mock数据**: 自动生成测试数据和多场景测试用例
+- ✅ **Mock数据**: 自动生成A股交易测试数据
 - ✅ **RESTful API**: 符合REST设计原则的API接口
 - ✅ **分页查询**: 支持分页和条件查询
 - ✅ **API文档**: 集成Swagger UI文档
 - ✅ **监控指标**: Spring Boot Actuator监控
 - ✅ **容器化**: Docker支持
-- ✅ **全面测试**: 单元测试和集成测试
+- ✅ **全面测试**: 单元测试、集成测试和压力测试
 
 ## 技术栈
 
@@ -86,12 +87,12 @@ mvn spring-boot:run
 
 1. **构建Docker镜像**
 ```bash
-docker build -t banking-transaction-system .
+docker build -t stock-trading-system .
 ```
 
 2. **运行容器**
 ```bash
-docker run -p 8080:8080 banking-transaction-system
+docker run -p 8080:8080 stock-trading-system
 ```
 
 ## 数据库配置
@@ -100,7 +101,7 @@ docker run -p 8080:8080 banking-transaction-system
 系统使用H2内存数据库进行开发和测试，提供以下特性：
 
 - **自动Schema创建**: 应用启动时自动创建数据表
-- **Mock数据生成**: 自动生成测试数据（10个账户，150-250笔交易）
+- **A股Mock数据**: 自动生成中国A股交易测试数据
 - **Web控制台**: 可视化数据库管理界面
 - **快速重启**: 内存模式，重启时数据重新初始化
 
@@ -119,16 +120,17 @@ spring.h2.console.enabled=true
 spring.jpa.hibernate.ddl-auto=create-drop
 spring.jpa.show-sql=true
 
-# 自动Mock数据
-spring.sql.init.mode=always
+# 禁用SQL脚本初始化，使用程序生成数据
+spring.sql.init.mode=never
 ```
 
-### Mock测试数据
+### A股Mock测试数据
 系统启动时自动生成：
-- **10个测试账户**: 1234567890 ~ 0123456789
-- **150-250笔交易**: 涵盖5种交易类型
-- **90天历史数据**: 模拟真实交易场景
-- **多种金额场景**: 0.01元 - 99,999.99元
+- **中国A股代码**: 000001(平安银行), 000002(万科A), 600036(招商银行), 600519(贵州茅台), 300015(爱尔眼科)
+- **真实股票名称**: 对应实际A股上市公司
+- **100-500笔交易**: 涵盖买入和卖出两种交易类型
+- **当天交易数据**: 模拟实时交易场景
+- **合理价格范围**: 10-100元/股价格区间
 
 ## API文档
 
@@ -139,35 +141,73 @@ spring.sql.init.mode=always
 
 ## 主要API接口
 
-### 交易管理
+### 股票交易管理
 
 | 方法 | 路径 | 描述 |
 |------|------|------|
-| POST | `/api/transactions` | 创建新交易 |
+| POST | `/api/transactions` | 创建新的股票交易 |
 | GET | `/api/transactions/{id}` | 获取交易详情 |
-| PUT | `/api/transactions/{id}` | 更新交易 |
-| DELETE | `/api/transactions/{id}` | 删除交易 |
+| PUT | `/api/transactions/{id}` | 更新交易信息 |
+| DELETE | `/api/transactions/{id}` | 删除交易记录 |
 | GET | `/api/transactions` | 分页获取交易列表 |
 
-### 查询接口
+### 查询和统计接口
 
 | 方法 | 路径 | 描述 |
 |------|------|------|
 | GET | `/api/transactions/account/{accountNumber}` | 按账户查询交易 |
-| GET | `/api/transactions/type/{type}` | 按类型查询交易 |
-| GET | `/api/transactions/balance/{accountNumber}` | 获取账户余额 |
-| GET | `/api/transactions/statistics` | 获取统计信息 |
+| GET | `/api/transactions/type/{type}` | 按类型查询交易(BUY/SELL) |
+| GET | `/api/transactions/security/{securityCode}/account/{accountNumber}/statistics` | 获取股票交易统计 |
+| GET | `/api/transactions/statistics` | 获取系统统计信息 |
+
+## 数据结构
+
+### 股票交易字段
+
+| 字段名 | 数据库列名 | 类型 | 必填 | 描述 |
+|--------|------------|------|------|------|
+| id | id | Long | 是 | 交易唯一标识 |
+| accountNumber | account_number | String | 是 | 16位账户号码 |
+| amount | amount | BigDecimal | 是 | 交易总金额 |
+| transType | trans_type | Enum | 是 | 交易类型(BUY/SELL) |
+| unit | unit | Long | 是 | 成交股数 |
+| price | price | BigDecimal | 是 | 成交价格(元/股) |
+| transDate | trans_date | LocalDate | 是 | 成交日期 |
+| securityCode | security_code | String | 是 | 股票代码 |
+| description | description | String | 否 | 交易描述 |
+| currency | currency | String | 否 | 货币类型(默认CNY) |
+| timestamp | timestamp | LocalDateTime | 是 | 交易创建时间 |
 
 ### 请求示例
 
-**创建交易**
+**创建股票买入交易**
 ```json
 POST /api/transactions
 {
-    "accountNumber": "1234567890",
-    "amount": 1000.00,
-    "type": "DEPOSIT",
-    "description": "工资存款",
+    "accountNumber": "1234567890123456",
+    "amount": 10000.00,
+    "transType": "BUY",
+    "unit": 1000,
+    "price": 10.00,
+    "transDate": "2024-01-01",
+    "securityCode": "000001",
+    "description": "买入平安银行",
+    "currency": "CNY"
+}
+```
+
+**创建股票卖出交易**
+```json
+POST /api/transactions
+{
+    "accountNumber": "1234567890123456",
+    "amount": 12000.00,
+    "transType": "SELL",
+    "unit": 1000,
+    "price": 12.00,
+    "transDate": "2024-01-02",
+    "securityCode": "000001",
+    "description": "卖出平安银行",
     "currency": "CNY"
 }
 ```
@@ -179,175 +219,135 @@ POST /api/transactions
     "message": "交易创建成功",
     "data": {
         "id": 1,
-        "accountNumber": "1234567890",
-        "amount": 1000.00,
-        "type": "DEPOSIT",
-        "description": "工资存款",
-        "timestamp": "2024-01-01 10:00:00",
+        "accountNumber": "1234567890123456",
+        "amount": 10000.00,
+        "transType": "BUY",
+        "unit": 1000,
+        "price": 10.00,
+        "transDate": "2024-01-01",
+        "securityCode": "000001",
+        "description": "买入平安银行",
         "currency": "CNY",
-        "balance": 1000.00
+        "timestamp": "2024-01-01T10:00:00"
     }
 }
 ```
 
 ## 交易类型
 
-系统支持以下交易类型：
+系统支持以下股票交易类型：
 
-- **DEPOSIT** (存款): 增加账户余额
-- **WITHDRAWAL** (取款): 减少账户余额
-- **TRANSFER** (转账): 减少账户余额
-- **PAYMENT** (支付): 减少账户余额
-- **REFUND** (退款): 增加账户余额
+- **BUY** (买入): 股票买入交易
+- **SELL** (卖出): 股票卖出交易
 
-## 监控和健康检查
+## 股票交易统计
 
-### Actuator端点
+系统提供详细的股票交易统计功能：
 
-- **健康检查**: http://localhost:8080/actuator/health
-- **应用信息**: http://localhost:8080/actuator/info
-- **指标数据**: http://localhost:8080/actuator/metrics
-- **缓存信息**: http://localhost:8080/actuator/cache
-- **数据源信息**: http://localhost:8080/actuator/health/db
+### 统计维度
+- **按股票代码**: 统计特定股票的交易情况
+- **按账户**: 统计特定账户的交易情况
+- **按交易日期**: 统计当天的交易数据
+- **按交易类型**: 分别统计买入和卖出
 
-### 系统访问地址
+### 统计指标
+- **买入总股数**: 当天买入的总股数
+- **买入总金额**: 当天买入的总金额
+- **买入均价**: 买入均价
+- **卖出总股数**: 当天卖出的总股数
+- **卖出总金额**: 当天卖出的总金额
+- **卖出均价**: 卖出均价
+- **净持仓变化**: 买入股数 - 卖出股数
+- **交易笔数**: 总交易笔数
 
-- **应用主页**: http://localhost:8080
-- **API文档**: http://localhost:8080/swagger-ui.html
-- **H2数据库控制台**: http://localhost:8080/h2-console
-- **健康检查**: http://localhost:8080/actuator/health
-
-## 测试
-
-### 运行单元测试
+**统计查询示例**
 ```bash
-mvn test
+GET /api/transactions/security/000001/account/1234567890123456/statistics
 ```
 
-### 运行集成测试
-```bash
-mvn integration-test
-```
-
-### 测试覆盖率
-```bash
-mvn jacoco:report
-```
-
-### 数据库测试
-```bash
-# 运行数据库集成测试
-mvn test -Dtest=TransactionRepositoryIntegrationTest
-
-# 运行JPA Repository测试
-mvn test -Dtest=*Repository*
-```
-
-### 压力测试
-
-系统包含压力测试脚本，可以测试高并发场景下的性能：
-
-```bash
-# 运行压力测试（需要应用正在运行）
-mvn test -Dtest=StressTest
-```
-
-### 测试数据管理
-```bash
-# 查看H2数据库中的测试数据
-# 1. 启动应用: mvn spring-boot:run
-# 2. 访问: http://localhost:8080/h2-console
-# 3. 使用JDBC URL: jdbc:h2:mem:testdb
-```
-
-## 性能特性
-
-### 缓存策略
-- **Caffeine缓存**: 30分钟写入过期，10分钟访问过期
-- **最大缓存条目**: 1000个
-- **缓存统计**: 启用性能监控
-
-### 并发性能
-- **ConcurrentHashMap**: 线程安全的内存存储
-- **原子操作**: 使用AtomicLong生成ID
-- **读写分离**: 优化查询性能
-
-### 内存优化
-- **流式处理**: 使用Stream API处理大量数据
-- **分页查询**: 支持大数据集的分页访问
-- **压缩响应**: 启用HTTP压缩
-
-## 错误处理
-
-系统提供完整的错误处理机制：
-
-### 错误类型
-- **TRANSACTION_NOT_FOUND**: 交易不存在
-- **VALIDATION_ERROR**: 输入验证失败
-- **INVALID_ARGUMENT**: 参数错误
-- **INSUFFICIENT_BALANCE**: 余额不足
-- **INTERNAL_ERROR**: 系统内部错误
-
-### 错误响应格式
+**统计响应示例**
 ```json
 {
-    "success": false,
-    "errorCode": "TRANSACTION_NOT_FOUND",
-    "message": "交易ID 123 不存在",
-    "timestamp": "2024-01-01 10:00:00",
-    "status": 404
+    "success": true,
+    "message": "获取股票交易统计成功",
+    "data": {
+        "securityCode": "000001",
+        "accountNumber": "1234567890123456",
+        "transDate": "2024-01-01",
+        "buyTotalUnit": 2000,
+        "buyTotalAmount": 20000.00,
+        "buyAveragePrice": 10.00,
+        "sellTotalUnit": 500,
+        "sellTotalAmount": 6000.00,
+        "sellAveragePrice": 12.00,
+        "netPositionChange": 1500,
+        "totalTransactions": 3
+    }
 }
 ```
 
-## 开发指南
+## 缓存策略
 
-### 项目结构
+系统使用Caffeine缓存提高查询性能：
+
+- **查询缓存**: 交易查询结果缓存
+- **统计缓存**: 股票统计数据缓存
+- **自动失效**: 数据更新时自动清除相关缓存
+
+## 系统监控
+
+- **健康检查**: `/actuator/health`
+- **系统指标**: `/actuator/metrics`
+- **缓存统计**: `/actuator/caches`
+
+## 测试覆盖
+
+### 测试类型
+- **单元测试**: Service层业务逻辑测试
+- **集成测试**: Controller层API测试
+- **压力测试**: 并发1000笔交易测试
+- **数据测试**: Repository层数据访问测试
+
+### A股测试数据
+测试环境自动生成以下A股数据：
+- 平安银行(000001)
+- 万科A(000002)  
+- 招商银行(600036)
+- 贵州茅台(600519)
+- 爱尔眼科(300015)
+
+## 部署说明
+
+### 环境要求
+- JVM内存: 512MB+
+- 磁盘空间: 100MB+
+- CPU: 1核心+
+
+### 生产配置建议
+```properties
+# 生产环境数据库配置
+spring.datasource.url=jdbc:h2:file:./data/stocks
+spring.jpa.hibernate.ddl-auto=update
+spring.h2.console.enabled=false
+
+# 缓存配置
+spring.cache.caffeine.spec=maximumSize=1000,expireAfterWrite=10m
+
+# 日志配置
+logging.level.com.banking=INFO
+logging.file.name=logs/stock-trading.log
 ```
-src/
-├── main/java/com/banking/
-│   ├── controller/          # REST控制器
-│   ├── service/            # 业务逻辑服务
-│   ├── repository/         # 数据访问层
-│   ├── model/              # 实体模型
-│   ├── dto/                # 数据传输对象
-│   ├── exception/          # 异常处理
-│   └── config/             # 配置类
-├── main/resources/
-│   └── application.properties  # 应用配置
-└── test/java/              # 测试代码
-```
 
-### 编码规范
-- 使用中文注释和错误消息
-- 遵循RESTful API设计原则
-- 完整的单元测试覆盖
-- 详细的API文档
+## 作者信息
 
-## 贡献指南
-
-1. Fork 项目
-2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 打开 Pull Request
+**开发者**: Kongloih Zhang F  
+**版本**: 1.0.0  
+**更新日期**: 2024年  
 
 ## 许可证
 
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情
+MIT License
 
-## 联系方式
+---
 
-- **项目维护者**: Banking System Team
-- **邮箱**: banking@example.com
-- **项目地址**: https://github.com/banking/transaction-management
-
-## 更新日志
-
-### v1.0.0 (2024-01-01)
-- ✅ 初始版本发布
-- ✅ 基础交易管理功能
-- ✅ REST API接口
-- ✅ 缓存和性能优化
-- ✅ 完整的测试覆盖
-- ✅ Docker容器化支持
-- ✅ API文档和监控 
+更多详细信息请参考项目文档或联系开发团队。 
