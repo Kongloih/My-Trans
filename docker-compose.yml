@@ -1,12 +1,12 @@
 version: '3.8'
 
 services:
-  banking-app:
+  stock-trading-app:
     build:
       context: .
       dockerfile: Dockerfile
-    image: banking-transaction-system:latest
-    container_name: banking-transaction-app
+    image: stock-trading-system:latest
+    container_name: stock-trading-app
     ports:
       - "8080:8080"
     environment:
@@ -22,7 +22,7 @@ services:
       retries: 3
       start_period: 60s
     networks:
-      - banking-network
+      - stock-trading-network
 
   # 可选：添加数据库服务（如果需要持久化H2数据库）
   # h2-database:
@@ -36,10 +36,10 @@ services:
   #   volumes:
   #     - h2-data:/opt/h2-data
   #   networks:
-  #     - banking-network
+  #     - stock-trading-network
 
 networks:
-  banking-network:
+  stock-trading-network:
     driver: bridge
 
 volumes:
