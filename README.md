@@ -1,10 +1,10 @@
-# 股票交易管理系统
+# 银行交易管理系统
 
-一个基于Spring Boot的现代化股票交易管理系统，支持股票买卖交易的创建、查询、更新和删除操作，以及股票交易统计分析。
+一个基于Spring Boot的现代化银行交易管理系统，支持股票买卖交易的创建、查询、更新和删除操作，以及银行交易统计分析。
 
 ## 功能特性
 
-- ✅ **股票交易管理**: 创建、查询、更新、删除股票交易记录
+- ✅ **银行交易管理**: 创建、查询、更新、删除银行交易记录
 - ✅ **交易统计分析**: 按股票代码和账户统计当天交易数据
 - ✅ **多字段支持**: 成交股数、成交价格、成交日期、股票代码等完整信息
 - ✅ **数据验证**: 完整的输入验证和错误处理
@@ -141,11 +141,11 @@ spring.sql.init.mode=never
 
 ## 主要API接口
 
-### 股票交易管理
+### 银行交易管理
 
 | 方法 | 路径 | 描述 |
 |------|------|------|
-| POST | `/api/transactions` | 创建新的股票交易 |
+| POST | `/api/transactions` | 创建新的银行交易 |
 | GET | `/api/transactions/{id}` | 获取交易详情 |
 | PUT | `/api/transactions/{id}` | 更新交易信息 |
 | DELETE | `/api/transactions/{id}` | 删除交易记录 |
@@ -157,12 +157,12 @@ spring.sql.init.mode=never
 |------|------|------|
 | GET | `/api/transactions/account/{accountNumber}` | 按账户查询交易 |
 | GET | `/api/transactions/type/{type}` | 按类型查询交易(BUY/SELL) |
-| GET | `/api/transactions/security/{securityCode}/account/{accountNumber}/statistics` | 获取股票交易统计 |
+| GET | `/api/transactions/security/{securityCode}/account/{accountNumber}/statistics` | 获取银行交易统计 |
 | GET | `/api/transactions/statistics` | 获取系统统计信息 |
 
 ## 数据结构
 
-### 股票交易字段
+### 银行交易字段
 
 | 字段名 | 数据库列名 | 类型 | 必填 | 描述 |
 |--------|------------|------|------|------|
@@ -235,14 +235,14 @@ POST /api/transactions
 
 ## 交易类型
 
-系统支持以下股票交易类型：
+系统支持以下银行交易类型：
 
 - **BUY** (买入): 股票买入交易
 - **SELL** (卖出): 股票卖出交易
 
-## 股票交易统计
+## 银行交易统计
 
-系统提供详细的股票交易统计功能：
+系统提供详细的银行交易统计功能：
 
 ### 统计维度
 - **按股票代码**: 统计特定股票的交易情况
@@ -269,7 +269,7 @@ GET /api/transactions/security/000001/account/1234567890123456/statistics
 ```json
 {
     "success": true,
-    "message": "获取股票交易统计成功",
+    "message": "获取银行交易统计成功",
     "data": {
         "securityCode": "000001",
         "accountNumber": "1234567890123456",
@@ -309,45 +309,6 @@ GET /api/transactions/security/000001/account/1234567890123456/statistics
 - **数据测试**: Repository层数据访问测试
 
 ### A股测试数据
-测试环境自动生成以下A股数据：
-- 平安银行(000001)
-- 万科A(000002)  
-- 招商银行(600036)
-- 贵州茅台(600519)
-- 爱尔眼科(300015)
+测试环境自动生成数据：
 
-## 部署说明
 
-### 环境要求
-- JVM内存: 512MB+
-- 磁盘空间: 100MB+
-- CPU: 1核心+
-
-### 生产配置建议
-```properties
-# 生产环境数据库配置
-spring.datasource.url=jdbc:h2:file:./data/stocks
-spring.jpa.hibernate.ddl-auto=update
-spring.h2.console.enabled=false
-
-# 缓存配置
-spring.cache.caffeine.spec=maximumSize=1000,expireAfterWrite=10m
-
-# 日志配置
-logging.level.com.banking=INFO
-logging.file.name=logs/stock-trading.log
-```
-
-## 作者信息
-
-**开发者**: Kongloih Zhang F  
-**版本**: 1.0.0  
-**更新日期**: 2024年  
-
-## 许可证
-
-MIT License
-
----
-
-更多详细信息请参考项目文档或联系开发团队。 
