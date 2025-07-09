@@ -374,26 +374,3 @@ JAVA_OPTS="-Xmx2g -Xms1g -XX:+UseG1GC"
 # 应用配置
 SPRING_PROFILES_ACTIVE=prod
 ```
-
-## 贡献指南
-
-1. Fork 项目
-2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 打开 Pull Request
-
-## 许可证
-
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
-
-## 联系方式
-
-如有问题或建议，请通过以下方式联系：
-
-- 项目Issues: [GitHub Issues](https://github.com/your-repo/issues)
-- 邮箱: your-email@example.com
-
----
-
-**注意**: 这是一个演示项目，仅用于学习和测试目的。在生产环境中使用前，请确保进行充分的安全审查和测试。
