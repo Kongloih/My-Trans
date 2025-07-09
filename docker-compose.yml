@@ -1,12 +1,12 @@
 version: '3.8'
 
 services:
-  stock-trading-app:
+  transaction-management:
     build:
       context: .
       dockerfile: Dockerfile
-    image: stock-trading-system:latest
-    container_name: stock-trading-app
+    image: transaction-management:latest
+    container_name: transaction-management
     ports:
       - "8080:8080"
     environment:

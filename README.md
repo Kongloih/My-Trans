@@ -58,7 +58,13 @@
 - Maven 3.6+
 - Docker (可选)
 
-### 本地运行
+### 快速开始
+
+#### 使用脚本（推荐）
+- **Linux/Mac**: `./quick-start.sh`
+- **Windows**: `quick-start.bat`
+
+#### 手动运行
 
 1. **克隆项目**
 ```bash
@@ -85,15 +91,22 @@ mvn spring-boot:run
 
 ### Docker运行
 
-1. **构建Docker镜像**
+1. **本地构建项目**
 ```bash
-docker build -t Transaction-Management .
+mvn clean package -DskipTests
 ```
 
-2. **运行容器**
+2. **构建Docker镜像**
 ```bash
-docker run -p 8080:8080 Transaction-Management
+docker build -t transaction-management .
 ```
+
+3. **运行容器**
+```bash
+docker run -p 8080:8080 transaction-management
+```
+
+> **注意**: 在构建Docker镜像之前，需要先在本地构建项目生成JAR文件。详细说明请参考 [Docker构建指南](DOCKER_BUILD_GUIDE.md)。
 
 ## 数据库配置
 
@@ -311,4 +324,76 @@ GET /api/transactions/security/000001/account/1234567890123456/statistics
 ### 测试数据
 测试环境自动生成数据：
 
+- **A股交易数据**: 自动生成100-500笔真实A股交易记录
+- **多账户数据**: 模拟多个银行账户的交易活动
+- **时间序列数据**: 按日期分布的交易数据
 
+## 部署指南
+
+### Docker部署
+
+详细的Docker部署说明请参考：[Docker构建指南](DOCKER_BUILD_GUIDE.md)
+
+### 生产环境部署
+
+1. **构建生产版本**
+```bash
+mvn clean package -DskipTests -Pprod
+```
+
+2. **Docker部署**
+```bash
+# 构建镜像
+docker build -t transaction-management .
+
+# 运行容器
+docker run -d -p 8080:8080 \
+  --name transaction-management \
+  --restart unless-stopped \
+  transaction-management
+```
+
+3. **使用Docker Compose**
+```bash
+docker-compose up -d
+```
+
+### 环境配置
+
+生产环境可以通过环境变量配置：
+
+```bash
+# 数据库配置
+SPRING_DATASOURCE_URL=jdbc:h2:file:./data/transactiondb
+SPRING_DATASOURCE_USERNAME=sa
+SPRING_DATASOURCE_PASSWORD=password
+
+# JVM配置
+JAVA_OPTS="-Xmx2g -Xms1g -XX:+UseG1GC"
+
+# 应用配置
+SPRING_PROFILES_ACTIVE=prod
+```
+
+## 贡献指南
+
+1. Fork 项目
+2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 打开 Pull Request
+
+## 许可证
+
+本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
+
+## 联系方式
+
+如有问题或建议，请通过以下方式联系：
+
+- 项目Issues: [GitHub Issues](https://github.com/your-repo/issues)
+- 邮箱: your-email@example.com
+
+---
+
+**注意**: 这是一个演示项目，仅用于学习和测试目的。在生产环境中使用前，请确保进行充分的安全审查和测试。
